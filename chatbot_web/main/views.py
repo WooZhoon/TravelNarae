@@ -6,21 +6,25 @@ import json
 
 
 def index(request):
-    return render(request, 'index.html')
+    return render(request, 'main/index.html')
 
 def chatbot(request):
-    return render(request, 'chatbot.html')
+    return render(request, 'main/chatbot.html')
 
 def board(request):
-    return render(request, 'board.html')
+    return render(request, 'main/board.html')
 
 def login_view(request):
-    return render(request, 'login.html')
+    return render(request, 'main/login.html')
 
 
 
 def chatbot_response(user_message):
     return f"챗봇이 응답한 메시지: {user_message}"
+
+
+def profile(request):
+    return render(request, 'main/profile.html')
 
 @csrf_exempt  
 def chat_api(request):
