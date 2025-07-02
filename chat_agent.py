@@ -16,18 +16,23 @@ from langgraph.graph.message import add_messages
 
 load_dotenv()
 memory = MemorySaver()
+
 from langchain_core.runnables import RunnableConfig
-config = RunnableConfig(
-    recursion_limit=10,
-    configurable={"thread_id": "1"},
-    tags=["my-tag"])
+
+def generate_config(session_id:str):
+    config = RunnableConfig(
+        recursion_limit=10,
+        configurable={"thread_id": session_id},
+        tags=["my-tag"])
+    return config
 
 # ✅ 상태 정의
 class State(TypedDict):
     messages: Annotated[list, add_messages]
 
 def agent():
-    tools = [NaverSearchTool(),RAG_tool,get_weather_by_location_and_date]
+    naver = NaverSearchTool()
+    tools = [RAG_tool,get_weather_by_location_and_date,naver]
     # print("🔧 Tools:", tools)
 
     llm = ChatOpenAI(model_name='gpt-4.1')
