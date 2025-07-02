@@ -17,6 +17,9 @@ def board(request):
 def login_view(request):
     return render(request, 'main/login.html')
 
+def signup(request):
+    return render(request, 'main/signup.html')
+
 
 
 def chatbot_response(user_message):

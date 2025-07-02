@@ -1,5 +1,28 @@
 {% extends 'main/base.html' %}
 
+{% load static %}
+
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'main/login.css' %}">
+{% endblock %}
+
 {% block content %}
-  <h4>로그인 페이지입니다 </h4>
+<div class="login-wrapper">
+  <div class="login-container">
+    <div class="input-group">
+      <input type="text" placeholder="아이디" class="input-box">
+      <input type="password" placeholder="비밀번호" class="input-box">
+    </div>
+    <div class="login-actions">
+      <button class="login-btn">로그인</button>
+    </div>
+    <div class="login-links">
+      <a href="{% url 'signup'%}" class="user-link">회원가입</a>
+      <span>|</span>
+      <a href="#">아이디 찾기</a>
+      <span>|</span>
+      <a href="#">비밀번호 찾기</a>
+    </div>
+  </div>
+</div>
 {% endblock %}
