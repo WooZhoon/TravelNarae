@@ -1,17 +1,13 @@
 import os
 import json
 import time
-import base64
 import asyncio
-from typing import Optional, Dict, Any, Type
+from typing import Optional, Type
 from dotenv import load_dotenv
 
 from langchain_core.tools import BaseTool
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import HumanMessage, AIMessage
 from pydantic import BaseModel, Field
 
-import mcp
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 
@@ -196,7 +192,7 @@ class NaverSearchTool(BaseTool):
                             "sort": sort
                         }
                     )
-                    # time.sleep(5)
+                    time.sleep(5)
                     # 결과 포맷팅
                     if result.content:
                         search_results = []

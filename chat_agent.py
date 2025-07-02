@@ -1,63 +1,99 @@
 # ✅ LangGraph 기반으로 리팩토링된 agent.py
 
+# 🌐 기본 라이브러리
+import os
+from typing import TypedDict, Annotated
 from dotenv import load_dotenv
-from typing import TypedDict
-from langgraph.checkpoint.memory import MemorySaver
-from langchain_openai import ChatOpenAI
-from langgraph.graph import StateGraph, START, END
 
-from typing import Annotated
+# 🤖 LangChain 관련
+from langchain_openai import ChatOpenAI
+from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.runnables import RunnableConfig
+
+# 🧠 LangGraph 관련
+from langgraph.graph import StateGraph, START, END
+from langgraph.graph.message import add_messages
 from langgraph.prebuilt import ToolNode, tools_condition
+from langgraph.checkpoint.memory import MemorySaver
+
+# 🛠️ 사용자 정의 도구
 from llm_tools.retriever import RAG_tool
 from llm_tools.get_weather import get_weather_by_location_and_date
 from llm_tools.google_places import get_places_by_keyword_and_location
 from llm_tools.naver_search import NaverSearchTool
-from langgraph.graph.message import add_messages
+from llm_tools.chat_history_manager import ChatHistoryManager
 
+# 🧾 프롬프트
+from system_prompt import get_system_prompt
+
+# ✅ 환경 변수 로드
 load_dotenv()
+
+# ✅ 상태 저장소
 memory = MemorySaver()
+chat_store = ChatHistoryManager()
 
-from langchain_core.runnables import RunnableConfig
-
-def generate_config(session_id:str):
-    config = RunnableConfig(
-        recursion_limit=10,
-        configurable={"thread_id": session_id},
-        tags=["my-tag"])
-    return config
 
 # ✅ 상태 정의
 class State(TypedDict):
+    session_id: str
     messages: Annotated[list, add_messages]
 
-def agent():
-    naver = NaverSearchTool()
-    tools = [RAG_tool,get_weather_by_location_and_date,naver]
-    # print("🔧 Tools:", tools)
 
+# ✅ Config 생성 함수
+def generate_config(session_id: str) -> RunnableConfig:
+    return RunnableConfig(
+        recursion_limit=10,
+        configurable={"thread_id": session_id},
+        tags=["my-tag"]
+    )
+
+
+# ✅ System Prompt 삽입 노드
+def prompt_node(state: State) -> State:
+    system_msg = SystemMessage(content=get_system_prompt())
+    if not any(msg.type == "system" for msg in state["messages"]):
+        state["messages"] = [system_msg] + state["messages"]
+    return state
+
+
+# ✅ ChatBot 노드 (LLM 호출 + DB 저장)
+def build_chatbot_node(tools):
     llm = ChatOpenAI(model_name='gpt-4.1')
     llm_with_tools = llm.bind_tools(tools)
 
-    # 챗봇 노드 정의
-    def chatbot(state: State):
-        return {"messages": [llm_with_tools.invoke(state["messages"])]}
+    def chatbot(state: State) -> State:
+        response = llm_with_tools.invoke(state["messages"])
+        # ✅ DB에 저장
+        history = chat_store.get_session_history(state["session_id"])
+        for msg in [*state["messages"], response]:
+            if isinstance(msg, BaseMessage):
+                history.add_message(msg)
 
-    # 상태 그래프 정의
-    graph_builder = StateGraph(State)
+        return {"session_id": state["session_id"], "messages": [response]}
 
-    # 노드 구성
-    graph_builder.add_node("chatbot", chatbot)
+    return chatbot
 
-    tool_node = ToolNode(tools=tools)
-    graph_builder.add_node("tools", tool_node)
 
-    graph_builder.add_conditional_edges("chatbot", tools_condition)
-    graph_builder.add_edge("tools", "chatbot")
+# ✅ 에이전트 그래프 정의 함수
+def agent(session_id: str):
+    # 도구 정의
+    naver = NaverSearchTool()
+    tools = [RAG_tool, get_weather_by_location_and_date, naver]
 
-    # 시작과 종료 정의
-    graph_builder.add_edge(START, "chatbot")
-    graph_builder.add_edge("chatbot", END)
+    # LangGraph 정의
+    graph = StateGraph(State)
 
-    # 그래프 컴파일
-    return graph_builder.compile(checkpointer=memory)
-    
+    # 노드 등록
+    graph.add_node("prompt", prompt_node)
+    graph.add_node("chatbot", build_chatbot_node(tools))
+    graph.add_node("tools", ToolNode(tools=tools))
+
+    # 노드 연결
+    graph.add_edge(START, "prompt")
+    graph.add_edge("prompt", "chatbot")
+    graph.add_conditional_edges("chatbot", tools_condition)
+    graph.add_edge("tools", "chatbot")
+    graph.add_edge("chatbot", END)
+
+    return graph.compile(checkpointer=memory)

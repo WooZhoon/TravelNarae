@@ -33,7 +33,7 @@ def get_places_by_keyword_and_location(keyword: str, location: str) -> str:
         }
         print(f"google_places tool called: {location}, {keyword}")
         response = requests.get(url, params=params, timeout=5)
-        # time.sleep(10)
+        time.sleep(5)
         data = response.json()
 
         if not data.get("results"):

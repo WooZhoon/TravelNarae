@@ -4,7 +4,7 @@ import time
 import requests
 from dotenv import load_dotenv
 from typing import Optional
-from datetime import datetime, timedelta
+from datetime import datetime
 from collections import defaultdict
 
 from langchain_core.tools import tool
@@ -76,7 +76,7 @@ def get_latlon_from_kakao(address: str):
 
     try:
         response = requests.get(url, headers=headers, params=params, timeout=5)
-        # time.sleep(5)
+        time.sleep(5)
         response.raise_for_status()
         data = response.json()
         documents = data.get("documents", [])
@@ -134,7 +134,7 @@ def get_weather_summary_by_date(nx: int, ny: int, base_date: str, fcst_filter_da
 
     try:
         response = requests.get(url, params=params, timeout=5)
-        # time.sleep(5)
+        time.sleep(5)
         response.raise_for_status()
         items = response.json()["response"]["body"]["items"]["item"]
     except Exception:
