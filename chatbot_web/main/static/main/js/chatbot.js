@@ -12,4 +12,6 @@ chatForm.addEventListener('submit', async () => {
   alert(`입력한 메시지: ${msg}`);  // 테스트용 알림
 
   userInput.value = '';
+
+  
 });

@@ -1,22 +1,18 @@
-
 body {
   margin: 0;
   padding: 0;
   font-family: 'Noto Sans KR', sans-serif;
   background: linear-gradient(to right, #f3f4f6, #e5e7eb);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
 }
 
 .login-wrapper {
+  margin-top: 100px;
+  padding-top: 100px;
+  padding-bottom: 50px;
   display: flex;
   justify-content: center;
-  align-items: center;
-  height: calc(100vh - 60px); 
-  padding-top: 30px;
-  padding-bottom: 30px;
+  min-height: calc(100vh - 60px);
+  box-sizing: border-box;
 }
 
 .login-container {
@@ -48,21 +44,16 @@ body {
 
 .input-box:focus {
   outline: none;
-  border-color: #6366f1; 
+  border-color: #6366f1;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
 }
 
-.login-actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
 .login-btn {
-  padding: 10px 24px;
+  padding: 12px 24px;
   background-color: #6366f1;
   color: white;
   font-weight: bold;
-  font-size: 15px;
+  font-size: 16px;
   border: none;
   border-radius: 8px;
   cursor: pointer;
