@@ -76,7 +76,7 @@ def build_chatbot_node(tools):
 
 
 # ✅ 에이전트 그래프 정의 함수
-def agent(session_id: str):
+def agent():
     # 도구 정의
     naver = NaverSearchTool()
     tools = [RAG_tool, get_weather_by_location_and_date, naver]

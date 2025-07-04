@@ -21,7 +21,7 @@ def main():
 
     session_id = username  # ✅ username이 곧 세션 ID
 
-    app = agent(session_id)
+    app = agent()
     config = generate_config(session_id)
 
     while True:
