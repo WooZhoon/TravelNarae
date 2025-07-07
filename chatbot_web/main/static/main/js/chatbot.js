@@ -1,3 +1,14 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const chatSidebar = document.querySelector('.chat-sidebar');
+    const chatWrapper = document.querySelector('.chat-wrapper');
+
+    sidebarToggle.addEventListener('click', () => {
+        chatSidebar.classList.toggle('collapsed');
+        chatWrapper.classList.toggle('sidebar-collapsed');
+    });
+});
+
 console.log('chatbot.js loaded successfully!');
 const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
