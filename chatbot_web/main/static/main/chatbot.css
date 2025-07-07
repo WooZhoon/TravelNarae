@@ -79,7 +79,7 @@ body > main {
 /* 전체 채팅 영역 */
 .chat-wrapper {
   margin-left: 240px;   /* 사이드바 폭만큼 오른쪽으로 */
-  height: calc(100vh - 60px);
+  height: calc(100vh - 180px);
   display: flex;
   box-sizing: border-box;
   transition: margin-left 0.3s ease;
@@ -93,13 +93,14 @@ body > main {
 .chat-main {
   flex: 1;
   background-color: #fff;
-  overflow-y: auto;
+  overflow-y: hidden;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;      /* 가로 중앙 */
   justify-content: space-between;  /* 세로 중앙 */
-  min-height: calc(100vh - 60px);
+  height: calc(80vh - 60px);
+  padding: 40px;
 }
 
 #chatBox {

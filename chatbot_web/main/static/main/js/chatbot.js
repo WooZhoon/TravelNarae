@@ -2,11 +2,15 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const chatSidebar = document.querySelector('.chat-sidebar');
     const chatWrapper = document.querySelector('.chat-wrapper');
+    const chatBox = document.getElementById('chatBox'); // chatBox 요소 가져오기
 
     sidebarToggle.addEventListener('click', () => {
         chatSidebar.classList.toggle('collapsed');
         chatWrapper.classList.toggle('sidebar-collapsed');
     });
+
+    // 초기 로드 시 스크롤을 맨 아래로
+    chatBox.scrollTop = chatBox.scrollHeight;
 });
 
 console.log('chatbot.js loaded successfully!');
@@ -48,7 +52,9 @@ function appendMessage(sender, message) {
   messageElement.classList.add('message', `${sender}-message`);
   messageElement.textContent = message;
   chatBox.appendChild(messageElement);
-  chatBox.scrollTop = chatBox.scrollHeight; // 스크롤을 맨 아래로
+  
+  // chatBox 스크롤을 맨 아래로
+  chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 // CSRF 토큰을 가져오는 함수 (Django 문서에서 권장하는 방식)
