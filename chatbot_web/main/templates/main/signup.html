@@ -10,7 +10,7 @@
 {% block content %}
 <div class="signup-wrapper">
   <div class="signup-container">
-    <h2>회원가입</h2>
+    <h2 class="text-center fw-bold mb-3">회원가입</h2>
     <form method="post" action="{% url 'main:signup' %}">
         {% csrf_token %}
         <div class="form-group">
