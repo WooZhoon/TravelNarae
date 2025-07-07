@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 # 🤖 LangChain 관련
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import BaseMessage, SystemMessage
+from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage
 from langchain_core.runnables import RunnableConfig
 
 # 🧠 LangGraph 관련
@@ -62,15 +62,29 @@ def build_chatbot_node(tools):
     llm = ChatOpenAI(model_name='gpt-4.1')
     llm_with_tools = llm.bind_tools(tools)
 
-    def chatbot(state: State) -> State:
-        response = llm_with_tools.invoke(state["messages"])
-        # ✅ DB에 저장
-        history = chat_store.get_session_history(state["session_id"])
-        for msg in [*state["messages"], response]:
-            if isinstance(msg, BaseMessage):
-                history.add_message(msg)
+    # LLM에 전달할 최대 메시지 수
+    MAX_HISTORY_MESSAGES = 10 # 필요에 따라 이 값을 조정하세요.
 
-        return {"session_id": state["session_id"], "messages": [response]}
+    def chatbot(state: State) -> State:
+        # 최근 메시지만 LLM에 전달
+        messages_to_send = state["messages"][-MAX_HISTORY_MESSAGES:]
+        response = llm_with_tools.invoke(messages_to_send)
+        # ✅ DB에 저장: 현재 턴의 사용자 메시지와 봇 응답만 저장
+        history = chat_store.get_session_history(state["session_id"])
+
+        # 현재 턴의 사용자 메시지를 찾습니다.
+        # state["messages"]는 누적된 메시지 리스트이므로, 마지막 HumanMessage가 현재 사용자 입력입니다.
+        user_message_for_this_turn = None
+        for msg in reversed(state["messages"]):
+            if isinstance(msg, HumanMessage):
+                user_message_for_this_turn = msg
+                break
+
+        if user_message_for_this_turn:
+            history.add_message(user_message_for_this_turn)
+        history.add_message(response) # 봇 응답 저장
+
+        return {"session_id": state["session_id"], "messages": [response]} # 다음 상태에는 현재 응답만 포함
 
     return chatbot
 

@@ -17,25 +17,30 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="{% url 'home' %}">여행 나래</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <a class="navbar-brand fw-bold" href="{% url 'main:home' %}">여행 나래</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
+            <span class="navbar-toggler-icon"></span>
+          </button>
 
-      <div class="collapse navbar-collapse" id="mainNavbar">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link active" href="{% url 'home' %}">홈</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'chatbot' %}">챗봇</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="{% url 'board' %}">게시판</a>
-          </li>
-        </ul>
-        <div class="d-flex">
-          <a class="btn btn-outline-primary me-2" href="{% url 'login' %}">로그인</a>
+          <div class="collapse navbar-collapse" id="mainNavbar">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+              <li class="nav-item">
+                <a class="nav-link active" href="{% url 'main:home' %}">홈</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'main:chatbot' %}">챗봇</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'main:board' %}">게시판</a>
+              </li>
+            </ul>
+            <div class="d-flex">
+              {% if request.session.nickname %}
+                <span class="navbar-text me-3">{{ request.session.nickname }}님, 환영합니다!</span>
+                <a class="btn btn-outline-secondary" href="{% url 'main:logout' %}">로그아웃</a>
+              {% else %}
+                <a class="btn btn-outline-primary me-2" href="{% url 'main:login' %}">로그인</a>
+              {% endif %}
         </div>
       </div>
     </div>
@@ -48,5 +53,6 @@
     {% endblock %}
   </div>
 
+  {% block extra_scripts %}{% endblock %}
 </body>
 </html>

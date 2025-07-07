@@ -2,6 +2,8 @@ import logging
 from chat_agent import agent, generate_config
 from langchain_core.messages import HumanMessage
 from auth import sign_in, sign_up  # ✅ 회원가입/로그인 함수가 여기에 정의되어 있다고 가정
+from dotenv import load_dotenv
+load_dotenv()
 
 logging.getLogger("httpx").setLevel(logging.WARNING)
 

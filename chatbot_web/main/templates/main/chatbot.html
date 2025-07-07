@@ -29,7 +29,8 @@
   <!-- 오른쪽 메인 챗영역 -->
   <div class="chat-main">
     <h2 class="chat-title">삐삐삣?</h2>
-    <form id="chatForm" class="chat-input-wrapper" onsubmit="return false;">
+    <div id="chatBox" class="chat-messages"></div>
+    <form id="chatForm" class="chat-input-wrapper">
       <input type="text" id="userInput" placeholder="삐삐삣" autocomplete="off" />
       <button type="submit" id="sendBtn" aria-label="전송">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
@@ -44,5 +45,5 @@
 {% endblock %}
 
 {% block extra_scripts %}
-  <script src="{% static 'js/chatbot.js' %}"></script>
+  <script src="{% static 'main/js/chatbot.js' %}"></script>
 {% endblock %}

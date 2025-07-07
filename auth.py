@@ -43,56 +43,71 @@ def create_user(db: Session, username: str, password: str) -> User:
 
 # --- UI Logic (Command-Line Interaction) ---
 
-def sign_up():
-    """사용자 회원가입을 처리하는 UI 함수입니다."""
+def web_signup(username, password):
+    """웹 애플리케이션용 회원가입 처리 함수입니다."""
     db = SessionLocal()
     try:
-        # 아이디 입력 및 중복 검사
-        while True:
-            username = input(">>> 아이디를 입력하세요: ").strip()
-            if not get_user(db, username):
-                print("사용 가능한 아이디입니다.")
-                break
-            else:
-                print("이미 존재하는 아이디입니다.")
-
-        # 비밀번호 입력 및 확인
-        while True:
-            password = getpass.getpass(">>> 비밀번호를 입력하세요 (8자 이상): ").strip()
-            if len(password) < 8:
-                print("비밀번호가 너무 짧습니다. 8자 이상 입력해주세요.")
-                continue
-
-            confirm = getpass.getpass(">>> 비밀번호를 다시 입력하세요: ").strip()
-            if password == confirm:
-                break
-            else:
-                print("비밀번호가 일치하지 않습니다.")
-
-        # 사용자 생성
+        if get_user(db, username):
+            return False  # 이미 존재하는 아이디
         create_user(db, username, password)
-        print("회원가입 성공!")
-
+        return True
     finally:
         db.close()
 
+def sign_up():
+    """사용자 회원가입을 처리하는 UI 함수입니다."""
+    # 아이디 입력 및 중복 검사
+    while True:
+        username = input(">>> 아이디를 입력하세요: ").strip()
+        if not web_signup(username, ""): # 임시 비밀번호로 중복 확인
+            print("이미 존재하는 아이디입니다.")
+        else:
+            print("사용 가능한 아이디입니다.")
+            break
 
-def sign_in():
-    """사용자 로그인을 처리하는 UI 함수입니다."""
+    # 비밀번호 입력 및 확인
+    while True:
+        password = getpass.getpass(">>> 비밀번호를 입력하세요 (8자 이상): ").strip()
+        if len(password) < 8:
+            print("비밀번호가 너무 짧습니다. 8자 이상 입력해주세요.")
+            continue
+
+        confirm = getpass.getpass(">>> 비밀번호를 다시 입력하세요: ").strip()
+        if password == confirm:
+            break
+        else:
+            print("비밀번호가 일치하지 않습니다.")
+
+    # 사용자 생성
+    web_signup(username, password)
+    print("회원가입 성공!")
+
+
+def web_login(username, password):
+    """웹 애플리케이션용 로그인 처리 함수입니다."""
     db = SessionLocal()
     try:
-        username = input(">>> 아이디를 입력하세요: ").strip()
-        password = getpass.getpass(">>> 비밀번호를 입력하세요: ").strip()
-
         user = get_user(db, username)
 
         if user and check_password(password, user.password_hash.encode('utf-8')):
-            print("로그인 성공!")
-            return username
+            return user.nickname if user.nickname else user.username
         else:
-            print("아이디 또는 비밀번호가 틀렸습니다.")
             return None
     finally:
         db.close()
+
+def sign_in():
+    """사용자 로그인을 처리하는 UI 함수입니다."""
+    username = input(">>> 아이디를 입력하세요: ").strip()
+    password = getpass.getpass(">>> 비밀번호를 입력하세요: ").strip()
+    
+    result = web_login(username, password)
+    if result:
+        print("로그인 성공!")
+        return result
+    else:
+        print("아이디 또는 비밀번호가 틀렸습니다.")
+        return None
+
 
 # Base.metadata.create_all(engine)  # 테이블 처음 생성할 때만 실행
