@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const chatSidebar = document.querySelector('.chat-sidebar');
     const chatWrapper = document.querySelector('.chat-wrapper');
-    const chatBox = document.getElementById('chatBox'); // chatBox 요소 가져오기
+    const chatMain = document.querySelector('.chat-main');
 
     sidebarToggle.addEventListener('click', () => {
         chatSidebar.classList.toggle('collapsed');
@@ -10,13 +10,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // 초기 로드 시 스크롤을 맨 아래로
-    chatBox.scrollTop = chatBox.scrollHeight;
+    chatMain.scrollTop = chatMain.scrollHeight;
 });
 
 console.log('chatbot.js loaded successfully!');
 const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
-const chatBox = document.getElementById('chatBox');
+const chatMain = document.querySelector('.chat-main');
 
 chatForm.addEventListener('submit', async (event) => {
   event.preventDefault(); // 폼 제출 방지
@@ -51,10 +51,10 @@ function appendMessage(sender, message) {
   const messageElement = document.createElement('div');
   messageElement.classList.add('message', `${sender}-message`);
   messageElement.textContent = message;
-  chatBox.appendChild(messageElement);
+  chatMain.appendChild(messageElement);
   
-  // chatBox 스크롤을 맨 아래로
-  chatBox.scrollTop = chatBox.scrollHeight;
+  // chatMain 스크롤을 맨 아래로
+  chatMain.scrollTop = chatMain.scrollHeight;
 }
 
 // CSRF 토큰을 가져오는 함수 (Django 문서에서 권장하는 방식)

@@ -79,8 +79,10 @@ body > main {
 /* 전체 채팅 영역 */
 .chat-wrapper {
   margin-left: 240px;   /* 사이드바 폭만큼 오른쪽으로 */
-  height: calc(100vh - 180px);
+  height: calc(100vh - 140px);
   display: flex;
+  flex-direction: column;
+  align-items: center;
   box-sizing: border-box;
   transition: margin-left 0.3s ease;
 }
@@ -93,20 +95,13 @@ body > main {
 .chat-main {
   flex: 1;
   background-color: #fff;
-  overflow-y: hidden;
+  overflow-y: visible;
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;      /* 가로 중앙 */
   justify-content: space-between;  /* 세로 중앙 */
-  height: calc(80vh - 60px);
   padding: 40px;
-}
-
-#chatBox {
-  flex-grow: 1;
-  overflow-y: auto;
-  margin-bottom: 20px;
 }
 
 .message {
@@ -156,12 +151,13 @@ body > main {
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 30px;
+  padding: 8px 12px;
   width: 100%;
   max-width: 800px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  margin: 0;
+  margin: 0 auto;
 }
 
 #userInput {
