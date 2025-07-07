@@ -147,7 +147,8 @@ body > main {
 }
 
 .chat-input-wrapper {
-  position: relative;
+  position: sticky;
+  bottom: 0;
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 30px;
@@ -158,6 +159,7 @@ body > main {
   display: flex;
   align-items: center;
   margin: 0 auto;
+  z-index: 1000;
 }
 
 #userInput {
