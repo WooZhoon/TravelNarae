@@ -97,7 +97,7 @@ body > main {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: stretch;      /* 가로 중앙 */
+  align-items: center;      /* 가로 중앙 */
   justify-content: space-between;  /* 세로 중앙 */
   min-height: calc(100vh - 60px);
   padding: 40px;
