@@ -1,14 +1,7 @@
 from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-<<<<<<< HEAD
-from dotenv import load_dotenv
-from django.shortcuts import render
-from django.conf import settings
-import requests
-=======
 from django.contrib.auth import authenticate, login, logout
->>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
 import json
 import sys
 import os
@@ -18,12 +11,6 @@ load_dotenv()
 TOUR_API_KEY = os.getenv("TOUR_API_KEY")
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
-<<<<<<< HEAD
-# from auth import web_login as custom_login, web_signup
-# from chat_agent import agent, generate_config
-# from langchain_core.messages import HumanMessage
-=======
->>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
 
 from langchain_core.messages import HumanMessage
 from chat_agent import agent, generate_config
@@ -54,44 +41,6 @@ def profile(request):
 
 # ===== 로그인 =====
 def login_view(request):
-<<<<<<< HEAD
-    return render(request, 'main/login.html')  #Login UI 확인용 / 아래 주석부분 대체
-
-def signup(request):
-    return render(request, 'main/signup.html') #Signup UI 확인용 / 아래 주석부분 대체
-
-def recommendation(request):
-    return render(request, 'main/recommended.html', {
-        'TOUR_API_KEY': os.getenv("TOUR_API_KEY")
-    })
-
-def map_view(request):
-    return render(request, 'main/heritage_map.html')  # 아직 구현 안 됐음
-
-
-
-
-# def login_view(request):
-#     if request.method == 'POST':
-#         user_id = request.POST.get('username')
-#         user_pw = request.POST.get('password')
-        
-#         nickname = custom_login(user_id, user_pw)
-        
-#         if nickname:
-#             request.session['nickname'] = nickname
-#             return redirect('main:home')
-#         else:
-#             error_message = "Invalid username or password."
-#             return render(request, 'main/login.html', {'error': error_message})
-            
-#     return render(request, 'main/login.html')
-
-# def logout_request(request):
-#     if 'nickname' in request.session:
-#         del request.session['nickname']
-#     return redirect("main:home")
-=======
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -156,7 +105,6 @@ def chatbot_response(request, user_message):
     session_id = get_session_id(request)
     app = agent()
     config = generate_config(session_id)
->>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
 
 # def signup(request):
 #     if request.method == 'POST':
@@ -176,33 +124,6 @@ def chatbot_response(request, user_message):
 #     app = agent()
 #     config = generate_config(session_id)
 
-<<<<<<< HEAD
-#     state = {
-#         "session_id": session_id,
-#         "messages": [HumanMessage(content=user_message)]
-#     }
-
-#     try:
-#         response = app.invoke(state, config=config)
-#         last_msg = response["messages"][-1].content
-#         return last_msg
-#     except Exception as e:
-#         return f"챗봇 오류 발생: {e}"
-
-# def profile(request):
-#     return render(request, 'main/profile.html')
-
-# @csrf_exempt  
-# def chat_api(request):
-#     if request.method == "POST":
-#         data = json.loads(request.body)
-#         user_msg = data.get("message", "")
-#         reply = chatbot_response(request, user_msg)
-#         return JsonResponse({"reply": reply})
-#     return JsonResponse({"error": "POST 요청만 허용"}, status=405)
-
-
-=======
 # ===== API (AJAX용) =====
 @csrf_exempt
 def chat_api(request):
@@ -215,4 +136,3 @@ def chat_api(request):
         except Exception as e:
             return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
     return JsonResponse({"error": "POST 요청만 허용"}, status=405)
->>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
