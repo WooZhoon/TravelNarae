@@ -33,12 +33,11 @@
       {% if sessions %}
         <ul class="chat-session-list">
           {% for s in sessions %}
-            <li class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}">
-              <a href="{% url 'main:chat_bot' s.id %}">{{ s.title }}</a>
-                <span class="material-symbols-outlined">chat</span>
-                {{ s.title|truncatechars:20 }}
-              </a>
-            </li>
+            <a href="{% url 'main:chat_bot' s.id %}"
+              class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}">
+              <span class="material-symbols-outlined">chat</span>
+              {{ s.title|truncatechars:20 }}
+            </a>
           {% endfor %}
         </ul>
       {% else %}

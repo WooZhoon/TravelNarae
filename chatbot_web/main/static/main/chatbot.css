@@ -220,7 +220,7 @@ body > main {
 }
 
 /* 호버 시 반응 */
-.chat-session-item:hover {
+.chat-session-item a:hover {
   background-color: #eaeaea;
 }
 
