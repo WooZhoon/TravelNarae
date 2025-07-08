@@ -73,16 +73,15 @@ body > main {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 5px;
+  padding: 2.5px;
 }
 
 /* 전체 채팅 영역 */
 .chat-wrapper {
-  margin-left: 240px;   /* 사이드바 폭만큼 오른쪽으로 */
+  margin-left: 120px;   /* 사이드바 폭만큼 오른쪽으로 */
   height: calc(100vh - 140px);
   display: flex;
   flex-direction: column;
-  align-items: center;
   box-sizing: border-box;
   transition: margin-left 0.3s ease;
 }
@@ -99,9 +98,9 @@ body > main {
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: center;      /* 가로 중앙 */
-  justify-content: space-between;  /* 세로 중앙 */
-  padding: 40px;
+  align-items: center;  /* 가로 중앙 */
+  justify-content: flex-start;  /* 세로 중앙 */
+  padding-bottom: 100px;
 }
 
 .message {
