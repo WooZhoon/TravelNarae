@@ -98,6 +98,19 @@ def chatbot(request):
 
 
 @login_required
+def chatbot_redirect_to_latest_session(request):
+    # 현재 사용자의 가장 최근 채팅 세션을 찾음
+    latest_session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+
+    if latest_session:
+        # 가장 최근 세션으로 리디렉션
+        return redirect('main:chat_bot', session_id=latest_session.id)
+    else:
+        # 채팅 세션이 없으면 새로 만들어서 해당 세션으로 이동
+        return chatbot(request)
+
+
+@login_required
 def chat_bot_view(request, session_id):
     user = request.user
     sessions = ChatSession.objects.filter(user=user).order_by('-created_at')
