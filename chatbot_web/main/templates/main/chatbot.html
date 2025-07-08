@@ -32,9 +32,22 @@
   </div>
   
   <!-- 오른쪽 메인 챗영역 -->
-  <div class="chat-main">
-    <h2 class="chat-title">삐삐삣?</h2>
-  </div>
+<div class="chat-main">
+  <p>Session ID: 
+    {% if request.user.is_authenticated %}
+      {{ request.user.username }}
+    {% else %}
+      {{ request.session.session_key }}
+    {% endif %}
+  </p>
+  <h2 class="chat-title">삐삐삣?</h2>
+  {% if messages %}
+    {% for msg in messages %}
+      <div class="message {{ msg.sender }}-message">{{ msg.text }}</div>
+    {% endfor %}
+  {% else %}
+    <div>대화 내역이 없습니다.</div>
+  {% endif %}
   <form id="chatForm" class="chat-input-wrapper">
     <input type="text" id="userInput" placeholder="삐삐삣" autocomplete="off" />
     <button type="submit" id="sendBtn" aria-label="전송">

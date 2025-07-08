@@ -21,7 +21,7 @@ from llm_tools.retriever import RAG_tool
 from llm_tools.get_weather import get_weather_by_location_and_date
 from llm_tools.google_places import get_places_by_keyword_and_location
 from llm_tools.naver_search import NaverSearchTool
-from llm_tools.chat_history_manager import ChatHistoryManager
+from llm_tools.chat_history_manager import chat_store
 
 # 🧾 프롬프트
 from system_prompt import get_system_prompt
@@ -31,8 +31,6 @@ load_dotenv()
 
 # ✅ 상태 저장소
 memory = MemorySaver()
-chat_store = ChatHistoryManager()
-
 
 # ✅ 상태 정의
 class State(TypedDict):
@@ -66,25 +64,25 @@ def build_chatbot_node(tools):
     MAX_HISTORY_MESSAGES = 10 # 필요에 따라 이 값을 조정하세요.
 
     def chatbot(state: State) -> State:
+        # 사용자 메시지도 저장
+        user_msg = next((msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)), None)
+        if user_msg:
+            chat_store.append_message(state["session_id"], user_msg)
+
         # 최근 메시지만 LLM에 전달
         messages_to_send = state["messages"][-MAX_HISTORY_MESSAGES:]
         response = llm_with_tools.invoke(messages_to_send)
-        # ✅ DB에 저장: 현재 턴의 사용자 메시지와 봇 응답만 저장
-        history = chat_store.get_session_history(state["session_id"])
 
-        # 현재 턴의 사용자 메시지를 찾습니다.
-        # state["messages"]는 누적된 메시지 리스트이므로, 마지막 HumanMessage가 현재 사용자 입력입니다.
-        user_message_for_this_turn = None
-        for msg in reversed(state["messages"]):
-            if isinstance(msg, HumanMessage):
-                user_message_for_this_turn = msg
-                break
+        # 메시지 저장은 append_message로 통일
+        chat_store.append_message(state["session_id"], response)
 
-        if user_message_for_this_turn:
-            history.add_message(user_message_for_this_turn)
-        history.add_message(response) # 봇 응답 저장
+        # 최신 메시지 목록 반환 (DB/캐시 기준)
+        latest_msgs = chat_store.get_messages(state["session_id"])
 
-        return {"session_id": state["session_id"], "messages": [response]} # 다음 상태에는 현재 응답만 포함
+        return {
+            "session_id": state["session_id"],
+            "messages": latest_msgs,
+        }
 
     return chatbot
 
