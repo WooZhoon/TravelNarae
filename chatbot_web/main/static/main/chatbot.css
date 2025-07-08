@@ -7,7 +7,8 @@
 }
 
 html, body {
-  height: 100%;
+  height: auto;
+  overflow-y: auto;
   margin: 0;
   padding: 0;
   width: 100vw;
@@ -50,35 +51,64 @@ body > main {
   overflow-y: auto;
   flex-shrink: 0;
   z-index: 100;
+  transition: width 0.3s ease, padding 0.3s ease;
+}
+
+.chat-sidebar.collapsed {
+  width: 50px;
+  padding: 20px 10px;
+}
+
+.chat-sidebar.collapsed .sidebar-item span:not(.material-symbols-outlined) {
+  display: none;
+}
+
+.chat-sidebar.collapsed .sidebar-item {
+    justify-content: center;
+}
+
+.chat-sidebar.collapsed .sidebar-item .material-symbols-outlined {
+    margin-right: 0;
+}
+
+.sidebar-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 20px;
+}
+
+.sidebar-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2.5px;
 }
 
 /* 전체 채팅 영역 */
 .chat-wrapper {
-  margin-left: 240px;   /* 사이드바 폭만큼 오른쪽으로 */
-  height: calc(100vh - 60px);
+  margin-left: 120px;   /* 사이드바 폭만큼 오른쪽으로 */
+  /* height: calc(100vh - 140px); */
   display: flex;
+  flex-direction: column;
   box-sizing: border-box;
+  transition: margin-left 0.3s ease;
+}
+
+.chat-wrapper.sidebar-collapsed {
+  margin-left: 50px;
 }
 
 /* 메인 채팅 영역: 중앙 배치 */
 .chat-main {
   flex: 1;
   background-color: #fff;
-  overflow-y: auto;
+  /* overflow-y: visible; */
   position: relative;
   display: flex;
   flex-direction: column;
-  align-items: stretch;      /* 가로 중앙 */
-  justify-content: space-between;  /* 세로 중앙 */
-  min-height: calc(100vh - 60px);
-  padding: 40px;
-}
-
-#chatBox {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 0 20px;
-  margin-bottom: 20px;
+  align-items: center;  /* 가로 중앙 */
+  justify-content: flex-start;  /* 세로 중앙 */
+  padding-bottom: 100px;
 }
 
 .message {
@@ -125,7 +155,8 @@ body > main {
 
 /* 입력창 */
 .chat-input-wrapper {
-  position: relative;
+  position: fixed;
+  bottom: 0;
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 30px;
@@ -135,7 +166,8 @@ body > main {
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  margin: 0;
+  margin-bottom: 25px;
+  z-index: 950;
 }
 
 #userInput {

@@ -16,12 +16,21 @@
 # from langgraph.prebuilt import ToolNode, tools_condition
 # from langgraph.checkpoint.memory import MemorySaver
 
+<<<<<<< HEAD
 # # 🛠️ 사용자 정의 도구
 # from llm_tools.retriever import RAG_tool
 # from llm_tools.get_weather import get_weather_by_location_and_date
 # from llm_tools.google_places import get_places_by_keyword_and_location
 # from llm_tools.naver_search import NaverSearchTool
 # from llm_tools.chat_history_manager import ChatHistoryManager
+=======
+# 🛠️ 사용자 정의 도구
+from llm_tools.retriever import RAG_tool
+from llm_tools.get_weather import get_weather_by_location_and_date
+from llm_tools.google_places import get_places_by_keyword_and_location
+from llm_tools.naver_search import NaverSearchTool
+from llm_tools.chat_history_manager import chat_store
+>>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
 
 # # 🧾 프롬프트
 # from system_prompt import get_system_prompt
@@ -29,10 +38,15 @@
 # # ✅ 환경 변수 로드
 # load_dotenv()
 
+<<<<<<< HEAD
 # # ✅ 상태 저장소
 # memory = MemorySaver()
 # chat_store = ChatHistoryManager()
 
+=======
+# ✅ 상태 저장소
+memory = MemorySaver()
+>>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
 
 # # ✅ 상태 정의
 # class State(TypedDict):
@@ -65,6 +79,7 @@
 #     # LLM에 전달할 최대 메시지 수
 #     MAX_HISTORY_MESSAGES = 10 # 필요에 따라 이 값을 조정하세요.
 
+<<<<<<< HEAD
 #     def chatbot(state: State) -> State:
 #         # 최근 메시지만 LLM에 전달
 #         messages_to_send = state["messages"][-MAX_HISTORY_MESSAGES:]
@@ -85,6 +100,28 @@
 #         history.add_message(response) # 봇 응답 저장
 
 #         return {"session_id": state["session_id"], "messages": [response]} # 다음 상태에는 현재 응답만 포함
+=======
+    def chatbot(state: State) -> State:
+        # 사용자 메시지도 저장
+        user_msg = next((msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)), None)
+        if user_msg:
+            chat_store.append_message(state["session_id"], user_msg)
+
+        # 최근 메시지만 LLM에 전달
+        messages_to_send = state["messages"][-MAX_HISTORY_MESSAGES:]
+        response = llm_with_tools.invoke(messages_to_send)
+
+        # 메시지 저장은 append_message로 통일
+        chat_store.append_message(state["session_id"], response)
+
+        # 최신 메시지 목록 반환 (DB/캐시 기준)
+        latest_msgs = chat_store.get_messages(state["session_id"])
+
+        return {
+            "session_id": state["session_id"],
+            "messages": latest_msgs,
+        }
+>>>>>>> a91387c8e5267bc900f8b141d3f9492cc7f7db37
 
 #     return chatbot
 
