@@ -1,0 +1,107 @@
+{% extends 'main/base.html' %}
+{% block content %}
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>추천 여행지 입력</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Flatpickr 스타일/스크립트 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://npmcdn.com/flatpickr/dist/l10n/ko.js"></script>
+
+  <!-- Bootstrap (선택: 더 깔끔한 UI용) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+<body class="p-4">
+
+  <div class="container">
+    <h2 class="mb-4">추천 여행지 설정</h2>
+
+    <!-- 📅 여행 날짜 선택 -->
+    <div class="mb-3">
+      <label for="travel-dates" class="form-label">여행 기간</label>
+      <input type="text" id="travel-dates" class="form-control" placeholder="시작일 ~ 종료일 선택">
+    </div>
+
+    <!-- 📍 지역 선택 -->
+    <div class="mb-3">
+      <label class="form-label">여행 지역</label>
+      <div class="row g-2">
+        <div class="col-md-6">
+          <select id="region" class="form-select">
+            <option value="">-- 시/도 선택 --</option>
+            <option value="서울">서울</option>
+            <option value="경기도">경기도</option>
+            <option value="강원도">강원도</option>
+          </select>
+        </div>
+        <div class="col-md-6">
+          <select id="sub-region" class="form-select" disabled>
+            <option value="">-- 세부 지역 선택 --</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- 👥 인원 수 -->
+    <div class="mb-3 row">
+      <div class="col-md-6">
+        <label for="adults" class="form-label">성인 수</label>
+        <input type="number" id="adults" class="form-control" min="1" value="1">
+      </div>
+      <div class="col-md-6">
+        <label for="children" class="form-label">어린이 수</label>
+        <input type="number" id="children" class="form-control" min="0" value="0">
+      </div>
+    </div>
+
+    <!-- ✅ 추천 버튼 -->
+    <button class="btn btn-primary">추천 받기</button>
+  </div>
+
+  <script>
+    // 📅 Flatpickr 달력 초기화
+    flatpickr("#travel-dates", {
+      mode: "range",
+      dateFormat: "Y-m-d",
+      locale: "ko",
+      minDate: "today",
+      disableMobile: false
+    });
+
+    // 📍 지역별 세부 지역 목록
+    const subRegions = {
+      "서울": ["서울 전체"],
+      "경기도": ["수원", "성남", "가평", "용인", "안산"],
+      "강원도": ["춘천", "속초", "강릉", "원주"]
+    };
+
+    const regionSelect = document.getElementById("region");
+    const subRegionSelect = document.getElementById("sub-region");
+
+    regionSelect.addEventListener("change", () => {
+      const selectedRegion = regionSelect.value;
+      subRegionSelect.innerHTML = "";
+
+      if (selectedRegion && subRegions[selectedRegion]) {
+        subRegionSelect.disabled = false;
+        subRegions[selectedRegion].forEach(sub => {
+          const option = document.createElement("option");
+          option.value = sub;
+          option.textContent = sub;
+          subRegionSelect.appendChild(option);
+        });
+      } else {
+        subRegionSelect.disabled = true;
+        subRegionSelect.innerHTML = "<option value=''>-- 세부 지역 선택 --</option>";
+      }
+    });
+  </script>
+</body>
+</html>
+
+{% endblock %}
