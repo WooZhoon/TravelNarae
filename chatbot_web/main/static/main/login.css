@@ -81,3 +81,17 @@ body {
   color: #4338ca;
   text-decoration: underline;
 }
+
+/* 모바일 화면 최적화 */
+@media (max-width: 768px) {
+  .login-wrapper {
+    margin-top: 50px; /* 상단 마진 줄이기 */
+    padding: 50px 20px 0; /* 상단 패딩 줄이고 좌우 패딩 추가 */
+    min-height: auto; /* 최소 높이 자동 조정 */
+  }
+
+  .login-container {
+    padding: 20px; /* 패딩 줄이기 */
+    margin: 0 20px; /* 좌우 마진 추가하여 화면 가장자리에 붙지 않도록 */
+  }
+}

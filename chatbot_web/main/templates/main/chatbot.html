@@ -7,13 +7,13 @@
 {% endblock %}
 
 {% block content %}
-<div class="page-layout">
+<div class="chat-wrapper">
 
-  <!-- 사이드바 -->
+  <!-- 왼쪽 사이드바 -->
   <div class="chat-sidebar">
     <div class="sidebar-item">
       <span class="material-symbols-outlined">edit</span>
-      <span>새 채팅</span>
+      <a href="{% url 'main:chatbot' %}" class="nav-link">새 채팅</a>
     </div>
     <div class="sidebar-item">
       <span class="material-symbols-outlined">search</span>
@@ -24,27 +24,25 @@
       <span>지난 채팅 목록</span>
     </div>
   </div>
-
-  <!-- 메인 영역 -->
-  <div class="main-container">
-    <div class="main-content">
-      <h2 class="chat-title">삐삐삣?</h2>
-      <form id="chatForm" class="chat-input-wrapper" onsubmit="return false;">
-        <input type="text" id="userInput" placeholder="삐삐삣" autocomplete="off" />
-        <button type="submit" id="sendBtn" aria-label="전송">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
-            viewBox="0 0 24 24" width="20" height="20">
-            <path d="M22 2L11 13"></path>
-            <path d="M22 2L15 22 11 13 2 9 22 2z"></path>
-          </svg>
-        </button>
-      </form>
-    </div>
+  
+  <!-- 오른쪽 메인 챗영역 -->
+  <div class="chat-main">
+    <h2 class="chat-title">삐삐삣?</h2>
+    <div id="chatBox" class="chat-messages"></div>
+    <form id="chatForm" class="chat-input-wrapper">
+      <input type="text" id="userInput" placeholder="삐삐삣" autocomplete="off" />
+      <button type="submit" id="sendBtn" aria-label="전송">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
+          viewBox="0 0 24 24" width="20" height="20">
+          <path d="M22 2L11 13"></path>
+          <path d="M22 2L15 22 11 13 2 9 22 2z"></path>
+        </svg>
+      </button>
+    </form>
   </div>
-
 </div>
 {% endblock %}
 
 {% block extra_scripts %}
-  <script src="{% static 'js/chatbot.js' %}"></script>
+  <script src="{% static 'main/js/chatbot.js' %}"></script>
 {% endblock %}
