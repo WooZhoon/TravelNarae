@@ -1,14 +1,11 @@
-# import os
-# from sqlalchemy import create_engine
+import os
+from sqlalchemy import create_engine
 
-# HOST = os.getenv("HOST")
-# PORT = os.getenv("PORT")
-# USER = os.getenv("USER")
-# PASS = os.getenv("PASS")
-# DB = os.getenv("DB")
+HOST = os.getenv("HOST")
+PORT = os.getenv("PORT")
+USER = os.getenv("USER")
+PASS = os.getenv("PASS")
+DB = os.getenv("DB")
 
-# engine = create_engine(f"mysql+pymysql://{USER}:{PASS}@{HOST}:{PORT}/{DB}")
-# # engine = create_engine(f"mysql+pymysql://root:password@localhost:3306/{DB}")
-
-engine = None
-print("🚫 현재는 DB 연결을 사용하지 않습니다. engine은 None입니다.")
+engine = create_engine(f"mysql+pymysql://{USER}:{PASS}@{HOST}:{PORT}/{DB}")
+# engine = create_engine(f"mysql+pymysql://root:password@localhost:3306/{DB}")

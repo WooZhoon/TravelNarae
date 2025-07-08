@@ -1,11 +1,5 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
 html, body {
   height: auto;
   overflow-y: auto;
@@ -14,7 +8,6 @@ html, body {
   width: 100vw;
   box-sizing: border-box;
   font-family: 'Noto Sans KR', sans-serif;
-  overflow-x: hidden;
 }
 
 /* 상단 고정 헤더 */
@@ -125,7 +118,7 @@ body > main {
   margin-left: auto;
 }
 
-.bot-message {
+.assistant-message {
   background-color: #f0f0f0;
   align-self: flex-start;
   margin-right: auto;
@@ -153,14 +146,13 @@ body > main {
   text-align: center;
 }
 
-/* 입력창 */
 .chat-input-wrapper {
   position: fixed;
   bottom: 0;
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 30px;
-  padding: 10px 20px;
+  padding: 8px 12px;
   width: 100%;
   max-width: 800px;
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);

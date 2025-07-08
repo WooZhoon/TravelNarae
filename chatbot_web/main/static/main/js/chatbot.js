@@ -39,10 +39,10 @@ chatForm.addEventListener('submit', async (event) => {
 
     const data = await response.json();
     console.log('Received response:', data);
-    appendMessage('bot', data.reply);
+    appendMessage('assistant', data.reply);
   } catch (error) {
     console.error('Error sending message:', error);
-    appendMessage('bot', '메시지를 보내는 중 오류가 발생했습니다.');
+    appendMessage('assistant', '메시지를 보내는 중 오류가 발생했습니다.');
   }
 });
 

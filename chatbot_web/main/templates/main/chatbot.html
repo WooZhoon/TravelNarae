@@ -2,8 +2,9 @@
 {% load static %}
 
 {% block extra_head %}
+  <!-- 구글 아이콘 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
-  <link rel="stylesheet" href="{% static 'main/chatbot.css' %}?v=202507032134">
+  <link rel="stylesheet" href="{% static 'main/chatbot.css' %}?v=20250703">
 {% endblock %}
 
 {% block content %}
@@ -18,7 +19,7 @@
     </div>
     <div class="sidebar-item">
       <span class="material-symbols-outlined">edit</span>
-      <a href="{% url 'main:chatbot' %}" class="nav-link">새 채팅</a>
+      <span>새 채팅</span>
     </div>
     <div class="sidebar-item">
       <span class="material-symbols-outlined">search</span>
@@ -40,15 +41,16 @@
     {% endif %}
   </p>
   <h2 class="chat-title">삐삐삣?</h2>
-  {% if messages %}
-    {% for msg in messages %}
-      <div class="message {{ msg.sender }}-message">{{ msg.text }}</div>
-    {% endfor %}
-  {% else %}
-    <div>대화 내역이 없습니다.</div>
-  {% endif %}
-  <form id="chatForm" class="chat-input-wrapper">
-    <input type="text" id="userInput" placeholder="삐삐삣" autocomplete="off" />
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="message {{ msg.role }}-message">{{ msg.content }}</div>
+      {% endfor %}
+    {% else %}
+      <div>대화 내역이 없습니다.</div>
+    {% endif %}
+  <form id="chatForm" method="post" class="chat-input-wrapper">
+    {% csrf_token %}
+    <input type="text" id="userInput" name="content" placeholder="삐삐삣" autocomplete="off" />
     <button type="submit" id="sendBtn" aria-label="전송">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2"
         viewBox="0 0 24 24" width="20" height="20">

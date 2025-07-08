@@ -1,70 +1,66 @@
-from django.shortcuts import render, redirect
+# 🔧 기본 Django 라이브러리
+from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
-from dotenv import load_dotenv
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib import messages
+
+# 🔧 파이썬 표준 라이브러리
 import json
 import sys
 import os
 
-load_dotenv()
-TOUR_API_KEY = os.getenv("TOUR_API_KEY")
+# 🔧 로컬 모델
+from .models import ChatSession, ChatMessage
 
+# 🔧 시스템 경로 등록
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
+# 🔧 외부 모듈 (LangChain 기반 응답 생성)
 from langchain_core.messages import HumanMessage
 from chat_agent import agent, generate_config
 from llm_tools.chat_history_manager import chat_store
-# ===== 기본 페이지 뷰 =====
+
+# ===================================================
+# 🌐 일반 페이지 뷰
+# ===================================================
+
 def index(request):
     return render(request, 'main/index.html')
 
-def chatbot(request):
-    session_id = get_session_id(request)
-    messages = chat_store.get_messages(session_id)
-
-    frontend_msgs = [
-        {"sender": "user" if isinstance(m, HumanMessage) else "bot", "text": m.content}
-        for m in messages
-    ]
-
-    return render(request, 'main/chatbot.html', {
-        "messages": frontend_msgs,
-        "session_id": session_id,
-    })
 
 def board(request):
     return render(request, 'main/board.html')
 
+
 def profile(request):
     return render(request, 'main/profile.html')
 
-# ===== 로그인 =====
+# ===================================================
+# 🔐 사용자 인증
+# ===================================================
+
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
 
         user = authenticate(request, username=username, password=password)
-        if user is not None:
-            login(request, user)  # 핵심: 로그인 세션 생성
+        if user:
+            login(request, user)
             return redirect('main:home')
         else:
             return render(request, 'main/login.html', {'error': "Invalid username or password."})
 
     return render(request, 'main/login.html')
 
-# ===== 로그아웃 =====
+
 def logout_request(request):
-    logout(request)  # 세션 및 인증 정보 모두 제거
+    logout(request)
     return redirect('main:home')
 
-# ===== 회원가입 =====
-# (web_signup이 User 모델과 연동되어 있다고 가정)
-from django.contrib.auth.models import User
-from django.contrib import messages
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
 
 def signup(request):
     if request.method == "POST":
@@ -82,51 +78,101 @@ def signup(request):
             return render(request, 'main/signup.html')
 
         user = User.objects.create_user(username=username, password=password)
-        # User 모델에 nickname 필드가 없으면, UserProfile 같은 별도 모델 만들어서 처리하는 게 정석임
-        # 여기서는 그냥 임시로 first_name에 저장해보자 (닉네임 용도)
-        user.first_name = nickname
+        user.first_name = nickname  # 임시 닉네임 저장
         user.save()
 
-        login(request, user)  # 회원가입 후 자동 로그인
+        login(request, user)
         return redirect('main:home')
 
     return render(request, 'main/signup.html')
 
-# ===== 세션 ID 획득 =====
+# ===================================================
+# 💬 채팅 시스템: 페이지 + 대화 처리
+# ===================================================
+
+@login_required
+def chatbot(request):
+    # 새로운 채팅 세션을 생성하고 해당 페이지로 이동
+    session = ChatSession.objects.create(user=request.user, title="새 채팅")
+    return redirect('main:chat_bot', session_id=session.id)
+
+
+@login_required
+def chat_bot_view(request, session_id):
+    # 세션 조회
+    session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+
+    # POST 요청: 유저 메시지 + AI 응답 저장
+    if request.method == 'POST':
+        content = request.POST.get('content')
+        if content:
+            ChatMessage.objects.create(session=session, role='user', content=content)
+            ai_response = chatbot_response(request, content)
+            ChatMessage.objects.create(session=session, role='assistant', content=ai_response)
+        return redirect('main:chat_bot', session_id=session.id)
+
+    # GET 요청: 메시지 불러오기
+    messages = ChatMessage.objects.filter(session=session).order_by('timestamp')
+    return render(request, 'main/chatbot.html', {
+        'session': session,
+        'messages': messages,
+    })
+
+# ===================================================
+# ⚙️ 유틸리티 함수: 세션 ID, 챗봇 응답
+# ===================================================
+
 def get_session_id(request):
+    # 인증된 유저의 고유 세션 키를 가져옴
     if request.user.is_authenticated:
         return request.user.username
     if not request.session.session_key:
         request.session.create()
     return request.session.session_key
 
-# ===== 챗봇 응답 처리 =====
+
 def chatbot_response(request, user_message):
+    # LangChain 기반 챗봇 응답 생성
     session_id = get_session_id(request)
     app = agent()
     config = generate_config(session_id)
-
-    state = {
-        "session_id": session_id,
-        "messages": [HumanMessage(content=user_message)]
-    }
+    state = {"session_id": session_id, "messages": [HumanMessage(content=user_message)]}
 
     try:
         response = app.invoke(state, config=config)
-        last_msg = response["messages"][-1].content
-        return last_msg
+        return response["messages"][-1].content
     except Exception as e:
         return f"챗봇 오류 발생: {e}"
 
-# ===== API (AJAX용) =====
+# ===================================================
+# 🔄 비동기 API (AJAX 기반)
+# ===================================================
+
 @csrf_exempt
+@login_required
 def chat_api(request):
-    if request.method == "POST":
-        try:
-            data = json.loads(request.body)
-            user_msg = data.get("message", "")
-            reply = chatbot_response(request, user_msg)
-            return JsonResponse({"reply": reply})
-        except Exception as e:
-            return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
-    return JsonResponse({"error": "POST 요청만 허용"}, status=405)
+    # 비동기 POST 요청으로 챗봇 응답 생성 및 DB 저장
+    if request.method != "POST":
+        return JsonResponse({"error": "POST 요청만 허용"}, status=405)
+
+    try:
+        data = json.loads(request.body)
+        user_msg = data.get("message", "")
+
+        # 최신 채팅 세션 가져오기
+        session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+        if not session:
+            session = ChatSession.objects.create(user=request.user, title="비동기 채팅")
+
+        # 유저 메시지 저장
+        ChatMessage.objects.create(session=session, role='user', content=user_msg)
+
+        # AI 응답 생성
+        reply = chatbot_response(request, user_msg)
+
+        # AI 메시지 저장
+        ChatMessage.objects.create(session=session, role='assistant', content=reply)
+
+        return JsonResponse({"reply": reply})
+    except Exception as e:
+        return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
