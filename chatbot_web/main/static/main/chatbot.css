@@ -1,7 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined');
 
 html, body {
-  height: 100%;
+  height: auto;
+  overflow-y: auto;
   margin: 0;
   padding: 0;
   width: 100vw;
@@ -79,7 +80,7 @@ body > main {
 /* 전체 채팅 영역 */
 .chat-wrapper {
   margin-left: 120px;   /* 사이드바 폭만큼 오른쪽으로 */
-  height: calc(100vh - 140px);
+  /* height: calc(100vh - 140px); */
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -94,7 +95,7 @@ body > main {
 .chat-main {
   flex: 1;
   background-color: #fff;
-  overflow-y: visible;
+  /* overflow-y: visible; */
   position: relative;
   display: flex;
   flex-direction: column;

@@ -2,18 +2,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const chatSidebar = document.querySelector('.chat-sidebar');
     const chatWrapper = document.querySelector('.chat-wrapper');
-    const chatMain = document.querySelector('.chat-main');
 
     sidebarToggle.addEventListener('click', () => {
         chatSidebar.classList.toggle('collapsed');
         chatWrapper.classList.toggle('sidebar-collapsed');
     });
 
-    // 초기 로드 시 스크롤을 맨 아래로
-    chatMain.scrollTop = chatMain.scrollHeight;
+    // ✅ 페이지 전체를 아래로 자동 스크롤
+    scrollToBottom();
 });
 
 console.log('chatbot.js loaded successfully!');
+
 const chatForm = document.getElementById('chatForm');
 const userInput = document.getElementById('userInput');
 const chatMain = document.querySelector('.chat-main');
@@ -38,7 +38,7 @@ chatForm.addEventListener('submit', async (event) => {
     });
 
     const data = await response.json();
-    console.log('Received response:', data); // 디버깅 로그 추가
+    console.log('Received response:', data);
     appendMessage('bot', data.reply);
   } catch (error) {
     console.error('Error sending message:', error);
@@ -47,29 +47,34 @@ chatForm.addEventListener('submit', async (event) => {
 });
 
 function appendMessage(sender, message) {
-  console.log(`Appending message: [${sender}] ${message}`); // 디버깅 로그 추가
+  console.log(`Appending message: [${sender}] ${message}`);
   const messageElement = document.createElement('div');
   messageElement.classList.add('message', `${sender}-message`);
   messageElement.textContent = message;
   chatMain.appendChild(messageElement);
-  
-  // chatMain 스크롤을 맨 아래로
-  chatMain.scrollTop = chatMain.scrollHeight;
+
+  // ✅ 페이지 전체를 아래로 자동 스크롤
+  scrollToBottom();
 }
 
-// CSRF 토큰을 가져오는 함수 (Django 문서에서 권장하는 방식)
+function scrollToBottom() {
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: 'smooth'
+  });
+}
+
 function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            // Does this cookie string begin with the name we want?
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
-        }
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-    return cookieValue;
+  }
+  return cookieValue;
 }
