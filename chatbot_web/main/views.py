@@ -2,10 +2,10 @@ from django.shortcuts import render, redirect
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
+from dotenv import load_dotenv
 import json
 import sys
 import os
-
 
 load_dotenv()
 TOUR_API_KEY = os.getenv("TOUR_API_KEY")
@@ -106,23 +106,17 @@ def chatbot_response(request, user_message):
     app = agent()
     config = generate_config(session_id)
 
-# def signup(request):
-#     if request.method == 'POST':
-#         user_id = request.POST.get('username')
-#         user_pw = request.POST.get('password')
-        
-#         if web_signup(user_id, user_pw):
-#             return redirect('main:login')
-#         else:
-#             error_message = "Username already exists."
-#             return render(request, 'main/signup.html', {'error': error_message})
-            
-#     return render(request, 'main/signup.html')
+    state = {
+        "session_id": session_id,
+        "messages": [HumanMessage(content=user_message)]
+    }
 
-# def chatbot_response(request, user_message):
-#     session_id = request.session.get('nickname', 'anonymous') # 로그인된 사용자 닉네임 사용, 없으면 anonymous
-#     app = agent()
-#     config = generate_config(session_id)
+    try:
+        response = app.invoke(state, config=config)
+        last_msg = response["messages"][-1].content
+        return last_msg
+    except Exception as e:
+        return f"챗봇 오류 발생: {e}"
 
 # ===== API (AJAX용) =====
 @csrf_exempt
