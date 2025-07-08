@@ -29,6 +29,22 @@
       <span class="material-symbols-outlined">chat</span>
       <span>지난 채팅 목록</span>
     </div>
+    <div class="sidebar-session-list">
+      {% if sessions %}
+        <ul class="chat-session-list">
+          {% for s in sessions %}
+            <li class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}">
+              <a href="{% url 'main:chat_bot' s.id %}">{{ s.title }}</a>
+                <span class="material-symbols-outlined">chat</span>
+                {{ s.title|truncatechars:20 }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="chat-session-empty">채팅 기록 없음</p>
+      {% endif %}
+    </div>
   </div>
   
   <!-- 오른쪽 메인 챗영역 -->

@@ -192,3 +192,48 @@ body > main {
 #sendBtn svg {
   stroke: #333;
 }
+/* 채팅 세션 리스트 전체 */
+.chat-session-list {
+  list-style: none;
+  margin: 12px 0 0 0;
+  padding: 0;
+  border-top: 1px solid #ddd;
+}
+
+/* 각 세션 항목 */
+.chat-session-item {
+  padding: 10px 8px;
+  font-size: 15px;
+  color: #333;
+  border-bottom: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+/* 아이콘 포함 시 대응 */
+.chat-session-item .material-symbols-outlined {
+  font-size: 18px;
+  color: #666;
+}
+
+/* 호버 시 반응 */
+.chat-session-item:hover {
+  background-color: #eaeaea;
+}
+
+/* 현재 선택된 세션 강조 */
+.chat-session-item.active {
+  background-color: #d0e8ff;
+  font-weight: bold;
+}
+
+/* 비어 있을 때 메시지 */
+.chat-session-empty {
+  font-size: 14px;
+  color: #999;
+  margin-top: 10px;
+  padding-left: 4px;
+}

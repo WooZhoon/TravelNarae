@@ -99,22 +99,14 @@ def chatbot(request):
 
 @login_required
 def chat_bot_view(request, session_id):
-    # 세션 조회
-    session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+    user = request.user
+    sessions = ChatSession.objects.filter(user=user).order_by('-created_at')
+    selected_session = get_object_or_404(ChatSession, id=session_id, user=user)
+    messages = selected_session.messages.order_by('timestamp')
 
-    # POST 요청: 유저 메시지 + AI 응답 저장
-    if request.method == 'POST':
-        content = request.POST.get('content')
-        if content:
-            ChatMessage.objects.create(session=session, role='user', content=content)
-            ai_response = chatbot_response(request, content)
-            ChatMessage.objects.create(session=session, role='assistant', content=ai_response)
-        return redirect('main:chat_bot', session_id=session.id)
-
-    # GET 요청: 메시지 불러오기
-    messages = ChatMessage.objects.filter(session=session).order_by('timestamp')
     return render(request, 'main/chatbot.html', {
-        'session': session,
+        'sessions': sessions,
+        'selected_session': selected_session,
         'messages': messages,
     })
 
