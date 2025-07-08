@@ -178,3 +178,12 @@ body {
   border-top-left-radius: 1rem;
   border-top-right-radius: 1rem;
 }
+
+.bold-link {
+    font-weight: bold;
+}
+
+.navbar-nav .nav-link.active,
+.navbar-nav .nav-link:hover {
+    font-weight: 550;
+}
