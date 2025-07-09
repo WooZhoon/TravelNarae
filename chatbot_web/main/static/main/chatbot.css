@@ -52,8 +52,16 @@ body > main {
   padding: 20px 10px;
 }
 
-.chat-sidebar.collapsed .sidebar-item span:not(.material-symbols-outlined) {
-  display: none;
+.sidebar-item > span:not(.material-symbols-outlined) {
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.sidebar-item > span.hide-text {
+  opacity: 0;
+  transform: translateX(-10px);
+  pointer-events: none;
 }
 
 .chat-sidebar.collapsed .sidebar-item {
@@ -131,6 +139,11 @@ body > main {
   font-size: 16px;
   color: #333;
   cursor: pointer;
+  transition: background-color 0.3s ease; /* Add transition for smooth hover */
+}
+
+.sidebar-item:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Subtle dark light effect */
 }
 
 .sidebar-item .material-symbols-outlined {
@@ -210,7 +223,7 @@ body > main {
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease; /* Adjusted transition for consistency */
 }
 
 /* 아이콘 포함 시 대응 */
@@ -220,8 +233,8 @@ body > main {
 }
 
 /* 호버 시 반응 */
-.chat-session-item a:hover {
-  background-color: #eaeaea;
+.chat-session-item:hover { /* Corrected selector */
+  background-color: rgba(0, 0, 0, 0.05); /* Subtle dark light effect */
 }
 
 /* 현재 선택된 세션 강조 */

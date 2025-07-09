@@ -5,43 +5,50 @@ document.addEventListener('DOMContentLoaded', function() {
     const toggleHistory = document.getElementById('toggle-history');
     const sessionList = document.querySelector('.sidebar-session-list');
 
+    const textSpans = document.querySelectorAll('.sidebar-item > span:not(.material-symbols-outlined)');
+
     sidebarToggle.addEventListener('click', () => {
         const isSidebarAboutToCollapse = !chatSidebar.classList.contains('collapsed');
 
         if (isSidebarAboutToCollapse) {
             // --- COLLAPSING THE SIDEBAR ---
+            // 1. Hide text instantly
+            textSpans.forEach(span => span.classList.add('hide-text'));
+
+            // 2. Collapse history list instantly
             const isHistoryOpen = sessionList.style.maxHeight !== '0px';
             sessionStorage.setItem('chatHistoryWasOpen', isHistoryOpen.toString());
 
             if (isHistoryOpen) {
-                // Collapse history list instantly
                 sessionList.style.transition = 'none'; // Disable transition
                 sessionList.style.maxHeight = '0px';
                 sessionStorage.setItem('chatHistoryOpen', 'false');
 
-                // Re-enable transition after a very short delay to allow DOM to update
                 requestAnimationFrame(() => {
                     sessionList.style.transition = 'max-height 0.2s ease-in-out'; // Restore transition
                 });
             }
 
-            // Then collapse the sidebar
+            // 3. Then collapse the sidebar
             chatSidebar.classList.add('collapsed');
             chatWrapper.classList.add('sidebar-collapsed');
 
         } else {
             // --- EXPANDING THE SIDEBAR ---
-            // Expand the sidebar first
+            // 1. Expand the sidebar first
             chatSidebar.classList.remove('collapsed');
             chatWrapper.classList.remove('sidebar-collapsed');
 
-            // Listen for the end of the sidebar's transition
+            // 2. Listen for the end of the sidebar's transition
             const onSidebarTransitionEnd = () => {
                 chatSidebar.removeEventListener('transitionend', onSidebarTransitionEnd);
 
+                // 3. Show text
+                textSpans.forEach(span => span.classList.remove('hide-text'));
+
+                // 4. Expand history list after sidebar is expanded
                 const wasHistoryOpen = sessionStorage.getItem('chatHistoryWasOpen') === 'true';
                 if (wasHistoryOpen) {
-                    // Expand history list after sidebar is expanded
                     sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
                     sessionStorage.setItem('chatHistoryOpen', 'true');
                 }
