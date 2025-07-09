@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 
 # 🤖 LangChain 관련
 from langchain_openai import ChatOpenAI
-from langchain_core.messages import BaseMessage, SystemMessage, HumanMessage
+from langchain_core.messages import SystemMessage
 from langchain_core.runnables import RunnableConfig
 
 # 🧠 LangGraph 관련
@@ -20,7 +20,6 @@ from llm_tools.retriever import RAG_tool
 from llm_tools.get_weather import get_weather_by_location_and_date
 from llm_tools.google_places import get_places_by_keyword_and_location
 from llm_tools.naver_search import NaverSearchTool
-from llm_tools.chat_history_manager import chat_store
 
 # 🧾 프롬프트
 from system_prompt import get_system_prompt
@@ -40,7 +39,7 @@ class State(TypedDict):
 # ✅ Config 생성 함수
 def generate_config(session_id: str) -> RunnableConfig:
     return RunnableConfig(
-        recursion_limit=10,
+        recursion_limit=20,
         configurable={"thread_id": session_id},
         tags=["my-tag"]
     )
@@ -58,42 +57,28 @@ def prompt_node(state: State) -> State:
 def build_chatbot_node(tools):
     llm = ChatOpenAI(model_name='gpt-4.1')
     llm_with_tools = llm.bind_tools(tools)
-
-    # LLM에 전달할 최대 메시지 수
-    MAX_HISTORY_MESSAGES = 10 # 필요에 따라 이 값을 조정하세요.
+    MAX_HISTORY_MESSAGES = 10  # 필요 시 조절
 
     def chatbot(state: State) -> State:
-        # 사용자 메시지도 저장
-        user_msg = next((msg for msg in reversed(state["messages"]) if isinstance(msg, HumanMessage)), None)
-        if user_msg:
-            chat_store.append_message(state["session_id"], user_msg)
-
-        # 최근 메시지만 LLM에 전달
-        messages_to_send = state["messages"][-MAX_HISTORY_MESSAGES:]
-        response = llm_with_tools.invoke(messages_to_send)
-
-        # 메시지 저장은 append_message로 통일
-        chat_store.append_message(state["session_id"], response)
-
-        # 최신 메시지 목록 반환 (DB/캐시 기준)
-        latest_msgs = chat_store.get_messages(state["session_id"])
+        recent_messages = state["messages"][-MAX_HISTORY_MESSAGES:]
+        response = llm_with_tools.invoke(recent_messages)
 
         return {
             "session_id": state["session_id"],
-            "messages": latest_msgs,
+            "messages": state["messages"] + [response]  # ✅ 누적 메시지 유지
         }
-
+    
     return chatbot
 
 
 # ✅ 에이전트 그래프 정의 함수
 def agent():
     # 도구 정의
-    naver = NaverSearchTool()
-    tools = [RAG_tool, get_weather_by_location_and_date, naver]
+    naver_tool = NaverSearchTool()
+    tools = [RAG_tool, get_weather_by_location_and_date, naver_tool]
 
     # LangGraph 정의
-    graph = StateGraph(State)
+    graph = StateGraph(State, is_async=True)
 
     # 노드 등록
     graph.add_node("prompt", prompt_node)

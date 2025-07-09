@@ -35,10 +35,9 @@ def RAG_tool(query: str, filter: Optional[Dict[str, Any]] = None) -> str:
         persist_directory="../chroma_db"
     )
 
-    retriever = vector_store.as_retriever(search_kwargs={"k":100})
+    retriever = vector_store.as_retriever(search_kwargs={"k":10})
     print(f"retiever tool called: {query}")
     docs = retriever.invoke(query)
-    # time.sleep(10)
 
     result = "\n\n".join([doc.page_content for doc in docs])
     return result[:3000]  # 너무 길어지는 것 방지

@@ -52,6 +52,7 @@ def get_weather_by_location_and_date(location: str, date: Optional[str] = None) 
         base_date = datetime.now().strftime('%Y%m%d')
         requested_date = datetime.strptime(date,'%Y-%m-%d').strftime('%Y%m%d') if date else base_date
     except ValueError:
+        print("❌ 날짜 형식 오류. 'YYYY-MM-DD' 형식으로 입력해주세요.")
         return "❌ 날짜 형식 오류. 'YYYY-MM-DD' 형식으로 입력해주세요."
     
     print(f"get_weather tool called: {requested_date}, {location}")
@@ -59,6 +60,7 @@ def get_weather_by_location_and_date(location: str, date: Optional[str] = None) 
     # 2. 좌표 얻기
     lat, lon = get_latlon_from_kakao(location)
     if lat is None or lon is None:
+        print(f"❌ 지역명 '{location}'을(를) 찾을 수 없습니다. 정확한 도시명으로 입력해주세요.")
         return f"❌ 지역명 '{location}'을(를) 찾을 수 없습니다. 정확한 도시명으로 입력해주세요."
 
     # 3. 격자 좌표 변환
@@ -76,7 +78,6 @@ def get_latlon_from_kakao(address: str):
 
     try:
         response = requests.get(url, headers=headers, params=params, timeout=5)
-        time.sleep(5)
         response.raise_for_status()
         data = response.json()
         documents = data.get("documents", [])
@@ -134,10 +135,10 @@ def get_weather_summary_by_date(nx: int, ny: int, base_date: str, fcst_filter_da
 
     try:
         response = requests.get(url, params=params, timeout=5)
-        time.sleep(5)
         response.raise_for_status()
         items = response.json()["response"]["body"]["items"]["item"]
     except Exception:
+        print("❌ 기상청 날씨 데이터를 불러오는 데 실패했습니다.")
         return "❌ 기상청 날씨 데이터를 불러오는 데 실패했습니다."
 
     sky_map, pty_map = defaultdict(str), defaultdict(str)

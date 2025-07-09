@@ -192,7 +192,6 @@ class NaverSearchTool(BaseTool):
                             "sort": sort
                         }
                     )
-                    time.sleep(5)
                     # 결과 포맷팅
                     if result.content:
                         search_results = []
