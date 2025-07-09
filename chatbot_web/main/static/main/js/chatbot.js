@@ -49,7 +49,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 // 4. Expand history list after sidebar is expanded
                 const wasHistoryOpen = sessionStorage.getItem('chatHistoryWasOpen') === 'true';
                 if (wasHistoryOpen) {
-                    sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+                    sessionList.classList.remove('collapsed'); // Remove collapsed class
+                    sessionList.style.maxHeight = sessionList.scrollHeight + 'px'; // Animate to scrollHeight
                     sessionStorage.setItem('chatHistoryOpen', 'true');
                 }
             };
@@ -58,31 +59,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     if (toggleHistory && sessionList) {
-        // Check session storage to see if the list should be open
-        const isHistoryOpen = sessionStorage.getItem('chatHistoryOpen') === 'true' || sessionStorage.getItem('chatHistoryOpen') === null;
+        // Initial state: check sessionStorage for previous state, default to open
+        const isHistoryOpen = sessionStorage.getItem('chatHistoryOpen') === 'true';
 
-        if (isHistoryOpen) {
-            // If it was open or not set, expand it on page load
-            // Use requestAnimationFrame to ensure scrollHeight is calculated after layout
-            requestAnimationFrame(() => {
-                sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
-                sessionStorage.setItem('chatHistoryOpen', 'true'); // Ensure it's set to true
-            });
-        } else {
-            // Otherwise, keep it collapsed
-            sessionList.style.maxHeight = '0px';
-            sessionStorage.setItem('chatHistoryOpen', 'false'); // Ensure it's set to false
-        }
+        sessionStorage.setItem('chatHistoryOpen', isHistoryOpen.toString()); // Store initial state
 
         toggleHistory.addEventListener('click', () => {
-            const isCurrentlyCollapsed = sessionList.style.maxHeight === '0px';
+            const isCurrentlyCollapsed = sessionList.classList.contains('collapsed');
             if (isCurrentlyCollapsed) {
                 // Expand the list
-                sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+                sessionList.classList.remove('collapsed');
+                sessionList.style.maxHeight = sessionList.scrollHeight + 'px'; // Animate to scrollHeight
                 sessionStorage.setItem('chatHistoryOpen', 'true');
             } else {
                 // Collapse the list
-                sessionList.style.maxHeight = '0px';
+                sessionList.classList.add('collapsed');
+                sessionList.style.maxHeight = '0px'; // Animate to 0
                 sessionStorage.setItem('chatHistoryOpen', 'false');
             }
         });
