@@ -49,23 +49,29 @@ body > main {
 
 .chat-sidebar.collapsed {
   width: 50px;
-  padding: 20px 10px;
+  padding: 10px;
 }
 
 .sidebar-item > span:not(.material-symbols-outlined) {
-  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out;
+  transition: opacity 0.2s ease-in-out, transform 0.2s ease-in-out, max-width 0.2s ease-in-out; /* Add max-width transition */
   opacity: 1;
   transform: translateX(0);
+  max-width: 200px; /* A large enough value to show all text when expanded */
+  overflow: hidden; /* Hide overflowing content during transition */
+  white-space: nowrap; /* Prevent text from wrapping */
 }
 
 .sidebar-item > span.hide-text {
   opacity: 0;
   transform: translateX(-10px);
   pointer-events: none;
+  max-width: 0; /* Collapse width to 0 */
 }
 
 .chat-sidebar.collapsed .sidebar-item {
-    justify-content: center;
+    padding-left: 3.5px; /* Fixed left padding for the item */
+    padding-top: 12px;
+    padding-bottom: 12px;
 }
 
 .chat-sidebar.collapsed .sidebar-item .material-symbols-outlined {
@@ -135,7 +141,7 @@ body > main {
 .sidebar-item {
   display: flex;
   align-items: center;
-  padding: 12px 0;
+  padding: 10px 0 10px 3.5px;
   font-size: 16px;
   color: #333;
   cursor: pointer;
