@@ -41,20 +41,24 @@ body {
 }
 
 
+.land.focused {
+  transform: scale(1.5);
+  fill: #FF6600 !important;
+}
+
+.land:not(.focused):hover {
+  transform: scale(1.1);
+  fill: #a0a0a0 !important;
+}
+
 .land.small-region.focused {
-  transform: scale(8);
-  fill: #FFA500;
-}
-
-.land.focused:not(.small-region) {
-  transform: scale(2);
+  transform: scale(3);
   fill: #FF6600 !important;
 }
 
-
-.focused {
-  fill: #FF6600 !important;
-  transform: scale(2);
+.land.small-region:not(.focused):hover {
+  transform: scale(1.5);
+  fill: #a0a0a0 !important;
 }
 
 /* 흐리게 처리할 경우 (사용 안 하고 있다면 생략 가능) */
