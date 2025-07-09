@@ -2,20 +2,77 @@ document.addEventListener('DOMContentLoaded', function() {
     const sidebarToggle = document.getElementById('sidebarToggle');
     const chatSidebar = document.querySelector('.chat-sidebar');
     const chatWrapper = document.querySelector('.chat-wrapper');
-
-    sidebarToggle.addEventListener('click', () => {
-        chatSidebar.classList.toggle('collapsed');
-        chatWrapper.classList.toggle('sidebar-collapsed');
-    });
-
     const toggleHistory = document.getElementById('toggle-history');
     const sessionList = document.querySelector('.sidebar-session-list');
 
+    sidebarToggle.addEventListener('click', () => {
+        const isSidebarAboutToCollapse = !chatSidebar.classList.contains('collapsed');
+
+        if (isSidebarAboutToCollapse) {
+            // --- COLLAPSING THE SIDEBAR ---
+            const isHistoryOpen = sessionList.style.maxHeight !== '0px';
+            sessionStorage.setItem('chatHistoryWasOpen', isHistoryOpen.toString());
+
+            if (isHistoryOpen) {
+                // Collapse history list instantly
+                sessionList.style.transition = 'none'; // Disable transition
+                sessionList.style.maxHeight = '0px';
+                sessionStorage.setItem('chatHistoryOpen', 'false');
+
+                // Re-enable transition after a very short delay to allow DOM to update
+                requestAnimationFrame(() => {
+                    sessionList.style.transition = 'max-height 0.2s ease-in-out'; // Restore transition
+                });
+            }
+
+            // Then collapse the sidebar
+            chatSidebar.classList.add('collapsed');
+            chatWrapper.classList.add('sidebar-collapsed');
+
+        } else {
+            // --- EXPANDING THE SIDEBAR ---
+            // Expand the sidebar first
+            chatSidebar.classList.remove('collapsed');
+            chatWrapper.classList.remove('sidebar-collapsed');
+
+            // Listen for the end of the sidebar's transition
+            const onSidebarTransitionEnd = () => {
+                chatSidebar.removeEventListener('transitionend', onSidebarTransitionEnd);
+
+                const wasHistoryOpen = sessionStorage.getItem('chatHistoryWasOpen') === 'true';
+                if (wasHistoryOpen) {
+                    // Expand history list after sidebar is expanded
+                    sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+                    sessionStorage.setItem('chatHistoryOpen', 'true');
+                }
+            };
+            chatSidebar.addEventListener('transitionend', onSidebarTransitionEnd);
+        }
+    });
+
     if (toggleHistory && sessionList) {
-        // 초기에 목록을 숨기기 위해 'collapsed' 클래스 추가
-        sessionList.classList.add('collapsed');
+        // Check session storage to see if the list should be open
+        const isHistoryOpen = sessionStorage.getItem('chatHistoryOpen') === 'true';
+
+        if (isHistoryOpen) {
+            // If it was open, expand it on page load
+            sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+        } else {
+            // Otherwise, keep it collapsed
+            sessionList.style.maxHeight = '0px';
+        }
+
         toggleHistory.addEventListener('click', () => {
-            sessionList.classList.toggle('collapsed');
+            const isCurrentlyCollapsed = sessionList.style.maxHeight === '0px';
+            if (isCurrentlyCollapsed) {
+                // Expand the list
+                sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+                sessionStorage.setItem('chatHistoryOpen', 'true');
+            } else {
+                // Collapse the list
+                sessionList.style.maxHeight = '0px';
+                sessionStorage.setItem('chatHistoryOpen', 'false');
+            }
         });
     }
 
