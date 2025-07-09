@@ -3,69 +3,17 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <title>팔도 지도</title>
-  <style>
-    .region-buttons {
-      margin: 20px auto;
-      text-align: center;
-    }
-
-    .region-buttons button {
-      margin: 5px;
-      padding: 8px 14px;
-      font-weight: bold;
-      border-radius: 5px;
-      border: 1px solid #999;
-      cursor: pointer;
-    }
-
-    object {
-      display: block;
-      margin: 0 auto;
-      width: 90%;
-      height: auto;
-      border: 1px solid #ccc;
-    }
-  </style>
+  <title>지도</title>
+  <link rel="stylesheet" href="{% static 'main/style.css' %}">
+  <link rel="stylesheet" href="{% static 'main/map_style.css' %}">
 </head>
 <body>
 
-  <h2 style="text-align: center;">팔도 인터랙티브 지도</h2>
+  <!-- SVG 지도 삽입 -->
+  <object type="image/svg+xml" data="{% static 'main/images/Korea.svg' %}" id="korea-map"></object>
 
-  <div class="region-buttons">
-    <button onclick="filterRegion('all')">전체 보기</button>
-    <button onclick="filterRegion('gyeonggi')">경기도</button>
-    <button onclick="filterRegion('gangwon')">강원도</button>
-    <button onclick="filterRegion('chungcheong')">충청도</button>
-    <button onclick="filterRegion('jeolla')">전라도</button>
-    <button onclick="filterRegion('gyeongsang')">경상도</button>
-    <button onclick="filterRegion('jeju')">제주도</button>
-    <button onclick="filterRegion('seoul')">서울</button>
-    <button onclick="filterRegion('incheon')">인천</button>
-  </div>
-
-  <object id="koreaMap" type="image/svg+xml" data="{% static 'main/images/korea.svg' %}"></object>
-
-  <script>
-    function filterRegion(regionId) {
-      const svgObject = document.getElementById("koreaMap");
-      const svgDoc = svgObject.contentDocument;
-
-      if (!svgDoc) {
-        alert("SVG를 불러오는 중입니다. 잠시 후 다시 시도해보세요.");
-        return;
-      }
-
-      const allRegions = ['gyeonggi', 'gangwon', 'chungcheong', 'jeolla', 'gyeongsang', 'jeju', 'seoul', 'incheon'];
-
-      allRegions.forEach(id => {
-        const region = svgDoc.getElementById(id);
-        if (region) {
-          region.style.display = (regionId === 'all' || regionId === id) ? 'inline' : 'none';
-        }
-      });
-    }
-  </script>
+  <!-- JS 파일 로드 -->
+  <script src="{% static 'main/js/map_interaction.js' %}"></script>
 
 </body>
 </html>

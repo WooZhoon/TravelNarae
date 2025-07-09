@@ -187,3 +187,25 @@ body {
 .navbar-nav .nav-link:hover {
     font-weight: 550;
 }
+
+
+#korea-map {
+  width: 100%;
+  max-width: 800px;
+  display: block;
+  margin: 0 auto;
+}
+
+#korea-map path {
+  fill: #ccc;
+  stroke: #333;
+  stroke-width: 1;
+  transition: all 0.3s ease;
+}
+
+#korea-map path:hover {
+  fill: orange;
+  cursor: pointer;
+  transform: scale(1.02);
+  transform-origin: center;
+}
