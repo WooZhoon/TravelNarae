@@ -240,12 +240,5 @@ body > main {
 
 .sidebar-session-list {
   overflow: hidden;
-  transition: max-height 0.5s ease-in-out, opacity 0.5s ease-in-out;
-  max-height: 500px; /* A large enough value to show all content */
-  opacity: 1;
-}
-
-.sidebar-session-list.collapsed {
-  max-height: 0;
-  opacity: 0;
+  transition: max-height 0.5s ease-in-out;
 }

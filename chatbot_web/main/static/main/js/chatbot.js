@@ -12,10 +12,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const sessionList = document.querySelector('.sidebar-session-list');
 
     if (toggleHistory && sessionList) {
-        // 초기에 목록을 숨기기 위해 'collapsed' 클래스 추가
-        sessionList.classList.add('collapsed');
+        // 초기에 목록을 숨김
+        sessionList.style.maxHeight = '0px';
+
         toggleHistory.addEventListener('click', () => {
-            sessionList.classList.toggle('collapsed');
+            if (sessionList.style.maxHeight === '0px') {
+                // The list is currently collapsed, so expand it.
+                // We need to get the full height of the content.
+                const scrollHeight = sessionList.scrollHeight;
+                sessionList.style.maxHeight = scrollHeight + 'px';
+            } else {
+                // The list is currently expanded, so collapse it.
+                sessionList.style.maxHeight = '0px';
+            }
         });
     }
 
