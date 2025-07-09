@@ -8,6 +8,17 @@ document.addEventListener('DOMContentLoaded', function() {
         chatWrapper.classList.toggle('sidebar-collapsed');
     });
 
+    const toggleHistory = document.getElementById('toggle-history');
+    const sessionList = document.querySelector('.sidebar-session-list');
+
+    if (toggleHistory && sessionList) {
+        // 초기에 목록을 숨김
+        sessionList.style.display = 'none';
+        toggleHistory.addEventListener('click', () => {
+            sessionList.style.display = sessionList.style.display === 'none' ? 'block' : 'none';
+        });
+    }
+
     // ✅ 페이지 전체를 아래로 자동 스크롤
     scrollToBottom();
 });
