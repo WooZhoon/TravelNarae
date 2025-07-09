@@ -14,6 +14,7 @@ urlpatterns = [
     path("profile/", views.profile, name="profile"),
     path('signup/', views.signup, name='signup'),
     path('chatbot/<int:session_id>/', views.chat_bot_view, name='chat_bot'),
+    path('api/chat/session/<int:session_id>/delete/', views.delete_chat_session, name='delete_chat_session'),
     path('recommendation/', views.recommendation, name='recommendation'),  # 임시
     path('map/', views.map_view, name='map'),
 ]

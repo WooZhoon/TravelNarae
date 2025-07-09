@@ -34,9 +34,10 @@
         <ul class="chat-session-list">
           {% for s in sessions %}
             <a href="{% url 'main:chat_bot' s.id %}"
-              class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}">
+              class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}" data-session-id="{{ s.id }}">
               <span class="material-symbols-outlined">chat</span>
-              {{ s.title|truncatechars:20 }}
+              <span class="session-title">{{ s.title|truncatechars:20 }}</span>
+              <span class="material-symbols-outlined delete-session-btn">close</span>
             </a>
           {% endfor %}
         </ul>

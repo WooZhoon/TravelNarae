@@ -185,6 +185,18 @@ def chat_api(request):
         return JsonResponse({"reply": reply})
     except Exception as e:
         return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
+
+@csrf_exempt
+@login_required
+def delete_chat_session(request, session_id):
+    if request.method == 'DELETE':
+        try:
+            session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+            session.delete()
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'DELETE method required'}, status=405)
     
 # ===================================================
 # 여행코스 추천 + 호버링 기능 구현 map

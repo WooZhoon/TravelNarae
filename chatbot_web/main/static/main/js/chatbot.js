@@ -59,14 +59,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     if (toggleHistory && sessionList) {
         // Check session storage to see if the list should be open
-        const isHistoryOpen = sessionStorage.getItem('chatHistoryOpen') === 'true';
+        const isHistoryOpen = sessionStorage.getItem('chatHistoryOpen') === 'true' || sessionStorage.getItem('chatHistoryOpen') === null;
 
         if (isHistoryOpen) {
-            // If it was open, expand it on page load
-            sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+            // If it was open or not set, expand it on page load
+            // Use requestAnimationFrame to ensure scrollHeight is calculated after layout
+            requestAnimationFrame(() => {
+                sessionList.style.maxHeight = sessionList.scrollHeight + 'px';
+                sessionStorage.setItem('chatHistoryOpen', 'true'); // Ensure it's set to true
+            });
         } else {
             // Otherwise, keep it collapsed
             sessionList.style.maxHeight = '0px';
+            sessionStorage.setItem('chatHistoryOpen', 'false'); // Ensure it's set to false
         }
 
         toggleHistory.addEventListener('click', () => {
@@ -85,6 +90,84 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ✅ 페이지 전체를 아래로 자동 스크롤
     scrollToBottom();
+
+    // --- Delete Session Logic (using event delegation) ---
+    const chatSessionListContainer = document.querySelector('.sidebar-session-list'); // The parent container for session items
+
+    if (chatSessionListContainer) {
+        chatSessionListContainer.addEventListener('click', (event) => {
+            const button = event.target.closest('.delete-session-btn'); // Find the clicked delete button
+
+            if (!button) return; // If click was not on a delete button, do nothing
+
+            event.preventDefault(); // Prevent default link behavior (if any)
+            event.stopPropagation(); // Prevent chat-session-item click event
+
+            const sessionItem = button.closest('.chat-session-item');
+            const sessionId = sessionItem.dataset.sessionId;
+
+            // Create confirmation dialog
+            const dialogOverlay = document.createElement('div');
+            dialogOverlay.classList.add('confirmation-dialog-overlay');
+
+            const dialog = document.createElement('div');
+            dialog.classList.add('confirmation-dialog');
+            dialog.innerHTML = `
+                <p>그 세션을 지우시겠습니까?</p>
+                <div class="confirmation-dialog-buttons">
+                    <button class="confirm-yes">YES</button>
+                    <button class="confirm-no">NO</button>
+                </div>
+            `;
+
+            dialogOverlay.appendChild(dialog);
+            document.body.appendChild(dialogOverlay); // Append to body to be on top
+
+            // Position the dialog relative to the sidebar
+            const sidebarRect = chatSidebar.getBoundingClientRect();
+            dialog.style.position = 'fixed'; // Use fixed for viewport relative positioning
+            dialog.style.top = `${sidebarRect.top + 20}px`; // A bit from the top of sidebar
+            dialog.style.left = `${sidebarRect.right + 20}px`; // To the right of sidebar
+            dialog.style.transform = 'translateX(0)'; // Reset transform if any
+            dialog.style.maxWidth = '250px'; // Limit width
+            dialog.style.width = 'auto'; // Adjust width based on content
+
+
+            // Add event listeners to dialog buttons
+            dialog.querySelector('.confirm-yes').addEventListener('click', async () => {
+                // Perform deletion
+                try {
+                    const response = await fetch(`/api/chat/session/${sessionId}/delete/`, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': getCookie('csrftoken')
+                        }
+                    });
+
+                    if (response.ok) {
+                        // Remove from DOM
+                        sessionItem.remove();
+                        // If the deleted session was the active one, redirect to a new chat
+                        if (sessionItem.classList.contains('active')) {
+                            window.location.href = '/chatbot/'; // Redirect to the view that handles latest/new session
+                        }
+                    } else {
+                        console.error('Failed to delete session:', response.statusText);
+                        alert('세션 삭제에 실패했습니다.');
+                    }
+                } catch (error) {
+                    console.error('Error deleting session:', error);
+                    alert('세션 삭제 중 오류가 발생했습니다.');
+                } finally {
+                    dialogOverlay.remove(); // Remove dialog
+                }
+            });
+
+            dialog.querySelector('.confirm-no').addEventListener('click', () => {
+                dialogOverlay.remove(); // Remove dialog
+            });
+        });
+    }
 });
 
 console.log('chatbot.js loaded successfully!');
