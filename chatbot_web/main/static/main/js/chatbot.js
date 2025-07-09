@@ -200,7 +200,7 @@ function appendMessage(sender, message) {
   console.log(`Appending message: [${sender}] ${message}`);
   const messageElement = document.createElement('div');
   messageElement.classList.add('message', `${sender}-message`);
-  messageElement.textContent = message;
+  messageElement.innerHTML = marked.parse(message);
   chatMain.appendChild(messageElement);
 
   // ✅ 페이지 전체를 아래로 자동 스크롤

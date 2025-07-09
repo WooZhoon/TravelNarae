@@ -5,6 +5,8 @@
   <!-- 구글 아이콘 폰트 -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
   <link rel="stylesheet" href="{% static 'main/chatbot.css' %}?v=20250703">
+  <!-- Marked.js CDN for Markdown parsing -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 {% endblock %}
 
 {% block content %}
@@ -59,11 +61,19 @@
   <h2 class="chat-title">삐삐삣?</h2>
     {% if messages %}
       {% for msg in messages %}
-        <div class="message {{ msg.role }}-message">{{ msg.content }}</div>
+        <div class="message {{ msg.role }}-message markdown-content">{{ msg.content|safe }}</div>
       {% endfor %}
     {% else %}
       <div>대화 내역이 없습니다.</div>
     {% endif %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const initialMessages = document.querySelectorAll('.message.markdown-content');
+      initialMessages.forEach(function(messageElement) {
+        messageElement.innerHTML = marked.parse(messageElement.textContent);
+      });
+    });
+  </script>
   <form id="chatForm" method="post" class="chat-input-wrapper">
     {% csrf_token %}
     <input type="text" id="userInput" name="content" placeholder="삐삐삣" autocomplete="off" />
