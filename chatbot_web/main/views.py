@@ -6,6 +6,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from dotenv import load_dotenv
+
+load_dotenv()
+TOUR_API_KEY = os.getenv("TOUR_API_KEY")
 
 # 🔧 파이썬 표준 라이브러리
 import json
@@ -181,3 +185,17 @@ def chat_api(request):
         return JsonResponse({"reply": reply})
     except Exception as e:
         return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
+    
+# ===================================================
+# 여행코스 추천
+# ===================================================
+    
+
+
+def recommendation(request):
+    return render(request, 'main/recommended.html', {
+        'TOUR_API_KEY': os.getenv("TOUR_API_KEY")
+    })
+
+def map_view(request):
+    return render(request, 'main/heritage_map.html')  # 아직 구현 안 됐음
