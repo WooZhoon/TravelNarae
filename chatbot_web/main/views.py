@@ -8,9 +8,6 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from dotenv import load_dotenv
 
-load_dotenv()
-TOUR_API_KEY = os.getenv("TOUR_API_KEY")
-
 # 🔧 파이썬 표준 라이브러리
 import json
 import sys
@@ -26,6 +23,9 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 from langchain_core.messages import HumanMessage
 from chat_agent import agent, generate_config
 from llm_tools.chat_history_manager import chat_store
+
+load_dotenv()
+TOUR_API_KEY = os.getenv("TOUR_API_KEY")
 
 # ===================================================
 # 🌐 일반 페이지 뷰

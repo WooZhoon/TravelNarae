@@ -140,6 +140,7 @@ body > main {
   color: #333;
   cursor: pointer;
   transition: background-color 0.3s ease; /* Add transition for smooth hover */
+  text-decoration: none; /* Remove underline */
 }
 
 .sidebar-item:hover {
@@ -224,6 +225,7 @@ body > main {
   gap: 8px;
   cursor: pointer;
   transition: background-color 0.3s ease; /* Adjusted transition for consistency */
+  text-decoration: none; /* Remove underline */
 }
 
 /* 아이콘 포함 시 대응 */
