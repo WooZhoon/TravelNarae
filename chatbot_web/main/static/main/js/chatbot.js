@@ -12,10 +12,10 @@ document.addEventListener('DOMContentLoaded', function() {
     const sessionList = document.querySelector('.sidebar-session-list');
 
     if (toggleHistory && sessionList) {
-        // 초기에 목록을 숨김
-        sessionList.style.display = 'none';
+        // 초기에 목록을 숨기기 위해 'collapsed' 클래스 추가
+        sessionList.classList.add('collapsed');
         toggleHistory.addEventListener('click', () => {
-            sessionList.style.display = sessionList.style.display === 'none' ? 'block' : 'none';
+            sessionList.classList.toggle('collapsed');
         });
     }
 
