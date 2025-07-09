@@ -1,0 +1,15 @@
+Django
+SQLAlchemy
+pymysql
+bcrypt
+langchain
+langchain-openai
+langchain-core
+langgraph
+langchain-chroma
+langchain-community
+python-dotenv
+requests
+discord.py
+mcp
+pydantic
