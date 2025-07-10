@@ -7,7 +7,7 @@ urlpatterns = [
     path('', views.index, name='home'),
     path('chatbot/', views.chatbot_redirect_to_latest_session, name='chatbot'),
     path('chatbot/new/', views.chatbot, name='chatbot_new'),
-    path('board/', views.board, name='board'),
+    # path('board/', views.board, name='board'), # <-- 이 줄은 제거
     path('login/', views.login_view, name='login'),
     path('api/chat/', views.chat_api, name='chat_api'),
     path("logout/", views.logout_request, name="logout"),
@@ -17,4 +17,11 @@ urlpatterns = [
     path('api/chat/session/<int:session_id>/delete/', views.delete_chat_session, name='delete_chat_session'),
     path('recommendation/', views.recommendation, name='recommendation'),  # 임시
     path('map/', views.map_view, name='map'),
+
+    # 게시판 URL
+    path('board/', views.PostListView.as_view(), name='board_list'),
+    path('board/<int:pk>/', views.PostDetailView.as_view(), name='board_detail'),
+    path('board/new/', views.PostCreateView.as_view(), name='board_new'),
+    path('board/<int:pk>/edit/', views.PostUpdateView.as_view(), name='board_edit'),
+    path('board/<int:pk>/delete/', views.PostDeleteView.as_view(), name='board_delete'),
 ]

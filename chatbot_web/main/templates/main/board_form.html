@@ -1,0 +1,21 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">{% if form.instance.pk %}게시글 수정{% else %}새 게시글 작성{% endif %}</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="{{ form.title.id_for_label }}" class="form-label">제목</label>
+            {{ form.title }}
+        </div>
+        <div class="mb-3">
+            <label for="{{ form.content.id_for_label }}" class="form-label">내용</label>
+            {{ form.content }}
+        </div>
+        <button type="submit" class="btn btn-primary">저장</button>
+        <a href="{% url 'main:board_list' %}" class="btn btn-secondary">취소</a>
+    </form>
+</div>
+{% endblock %}

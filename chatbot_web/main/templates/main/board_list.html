@@ -1,0 +1,41 @@
+{% extends 'main/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">게시판</h2>
+    <a href="{% url 'main:board_new' %}" class="btn btn-primary mb-3">새 글 작성</a>
+
+    {% if posts %}
+    <div class="list-group">
+        {% for post in posts %}
+        <a href="{% url 'main:board_detail' post.pk %}" class="list-group-item list-group-item-action flex-column align-items-start">
+            <div class="d-flex w-100 justify-content-between">
+                <h5 class="mb-1">{{ post.title }}</h5>
+                <small>{{ post.created_at|date:"Y.m.d H:i" }}</small>
+            </div>
+            <p class="mb-1 text-muted">작성자: {{ post.author.username }}</p>
+        </a>
+        {% endfor %}
+    </div>
+
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">이전</a></li>
+            {% endif %}
+
+            {% for i in page_obj.paginator.page_range %}
+            <li class="page-item {% if page_obj.number == i %}active{% endif %}"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">다음</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% else %}
+    <p>게시글이 없습니다.</p>
+    {% endif %}
+</div>
+{% endblock %}

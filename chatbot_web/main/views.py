@@ -6,6 +6,9 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
+from django.urls import reverse_lazy
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from dotenv import load_dotenv
 
 # 🔧 파이썬 표준 라이브러리
@@ -14,7 +17,7 @@ import sys
 import os
 
 # 🔧 로컬 모델
-from .models import ChatSession, ChatMessage
+from .models import ChatSession, ChatMessage, Post
 
 # 🔧 시스템 경로 등록
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -211,3 +214,47 @@ def recommendation(request):
 
 def map_view(request):
     return render(request, 'main/heritage_map.html')  # 아직 구현 안 됐음
+
+# ===================================================
+# 📝 게시판 기능
+# ===================================================
+
+class PostListView(ListView):
+    model = Post
+    template_name = 'main/board_list.html'  # 게시글 목록을 보여줄 템플릿
+    context_object_name = 'posts'  # 템플릿에서 사용할 변수 이름
+    paginate_by = 10  # 한 페이지에 10개의 게시글
+
+class PostDetailView(DetailView):
+    model = Post
+    template_name = 'main/board_detail.html'  # 게시글 상세를 보여줄 템플릿
+    context_object_name = 'post'  # 템플릿에서 사용할 변수 이름
+
+class PostCreateView(LoginRequiredMixin, CreateView):
+    model = Post
+    template_name = 'main/board_form.html'  # 게시글 작성 폼 템플릿
+    fields = ['title', 'content']  # 사용자가 입력할 필드
+    success_url = reverse_lazy('main:board_list')  # 작성 성공 시 이동할 URL
+
+    def form_valid(self, form):
+        form.instance.author = self.request.user  # 작성자를 현재 로그인한 사용자로 설정
+        return super().form_valid(form)
+
+class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
+    model = Post
+    template_name = 'main/board_form.html'  # 게시글 수정 폼 템플릿
+    fields = ['title', 'content']  # 사용자가 수정할 필드
+    success_url = reverse_lazy('main:board_list')  # 수정 성공 시 이동할 URL
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author  # 작성자만 수정 가능
+
+class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
+    model = Post
+    template_name = 'main/board_confirm_delete.html'  # 게시글 삭제 확인 템플릿
+    success_url = reverse_lazy('main:board_list')  # 삭제 성공 시 이동할 URL
+
+    def test_func(self):
+        post = self.get_object()
+        return self.request.user == post.author  # 작성자만 삭제 가능
