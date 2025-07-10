@@ -209,3 +209,15 @@ body {
   transform: scale(1.02);
   transform-origin: center;
 }
+
+.action-link {
+    color: #007bff; /* Bootstrap primary color */
+    text-decoration: none;
+    margin: 0 5px;
+    transition: font-weight 0.2s ease;
+}
+
+.action-link:hover {
+    font-weight: bold;
+    text-decoration: underline;
+}
