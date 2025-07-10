@@ -227,6 +227,7 @@ class PostListView(ListView):
     template_name = 'main/board_list.html'  # 게시글 목록을 보여줄 템플릿
     context_object_name = 'posts'  # 템플릿에서 사용할 변수 이름
     paginate_by = 10  # 한 페이지에 10개의 게시글
+    ordering = ['-created_at']  # 최신순 정렬 추가
 
     def get_queryset(self):
         queryset = super().get_queryset()

@@ -57,19 +57,21 @@
     <h4 class="mt-4 mb-3">댓글 작성</h4>
     <form id="comment-form" class="mb-5">
         {% csrf_token %}
-        <div class="mb-3">
-            <label for="id_author_name" class="form-label">이름</label>
-            <input type="text" class="form-control" id="id_author_name" name="author_name" required>
+
+        <!-- 줄 1: 이름 + 비번 -->
+        <div class="d-flex align-items-center gap-3 mb-2">
+            <input type="text" class="form-control" name="author_name" placeholder="이름" required style="width: 150px;">
+            <input type="password" class="form-control" name="password" placeholder="비밀번호" required style="width: 150px;">
         </div>
-        <div class="mb-3">
-            <label for="id_password" class="form-label">비밀번호</label>
-            <input type="password" class="form-control" id="id_password" name="password" required>
+
+        <!-- 줄 2: 내용 textarea + 버튼 -->
+        <div class="d-flex align-items-start gap-3">
+            <textarea class="form-control" name="content" placeholder="내용을 입력하세요" required rows="3" style="flex: 1;"></textarea>
+            <div class="d-flex flex-column gap-2">
+                <button type="submit" class="btn btn-primary">등록</button>
+                <button type="submit" class="btn btn-outline-primary">등록+추천</button>
+            </div>
         </div>
-        <div class="mb-3">
-            <label for="id_content" class="form-label">내용</label>
-            <textarea class="form-control" id="id_content" name="content" rows="3" required></textarea>
-        </div>
-        <button type="submit" class="btn btn-primary">댓글 작성</button>
     </form>
 
 </div>
