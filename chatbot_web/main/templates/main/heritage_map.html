@@ -1,12 +1,12 @@
+{% extends 'main/base.html' %}
 {% load static %}
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
+
+{% block extra_head %}
   <title>대한민국 문화유산 지도</title>
   <link rel="stylesheet" href="{% static 'main/map_style.css' %}">
-</head>
-<body>
+{% endblock %}
+
+{% block content %}
   <h2>대한민국 문화유산 지도</h2>
   <button id="back-button" style="display:none;">←</button>
 
@@ -39,7 +39,8 @@
       </g>
     </svg>
   </div>
+{% endblock %}
 
+{% block extra_scripts %}
   <script src="{% static 'main/js/map_interaction.js' %}"></script>
-</body>
-</html>
+{% endblock %}
