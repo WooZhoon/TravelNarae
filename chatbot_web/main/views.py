@@ -220,11 +220,21 @@ def map_view(request):
 # 📝 게시판 기능
 # ===================================================
 
+from django.db.models import Count # Count 임포트 추가
+
 class PostListView(ListView):
     model = Post
     template_name = 'main/board_list.html'  # 게시글 목록을 보여줄 템플릿
     context_object_name = 'posts'  # 템플릿에서 사용할 변수 이름
     paginate_by = 10  # 한 페이지에 10개의 게시글
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.annotate(
+            likes_count=Count('likes', distinct=True),
+            comment_count=Count('comments', distinct=True)
+        )
+        return queryset
 
 class PostDetailView(DetailView):
     model = Post
