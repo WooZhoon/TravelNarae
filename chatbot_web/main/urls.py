@@ -24,4 +24,7 @@ urlpatterns = [
     path('board/new/', views.PostCreateView.as_view(), name='board_new'),
     path('board/<int:pk>/edit/', views.PostUpdateView.as_view(), name='board_edit'),
     path('board/<int:pk>/delete/', views.PostDeleteView.as_view(), name='board_delete'),
+    path('api/board/<int:pk>/like/', views.like_post, name='like_post'),
+    path('api/board/<int:pk>/comments/add/', views.add_comment, name='add_comment'),
+    path('api/comments/<int:pk>/delete/', views.delete_comment, name='delete_comment'),
 ]

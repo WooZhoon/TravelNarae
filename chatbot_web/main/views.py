@@ -9,6 +9,7 @@ from django.contrib import messages
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.hashers import make_password, check_password # 비밀번호 해싱을 위해 추가
 from dotenv import load_dotenv
 
 # 🔧 파이썬 표준 라이브러리
@@ -17,7 +18,7 @@ import sys
 import os
 
 # 🔧 로컬 모델
-from .models import ChatSession, ChatMessage, Post
+from .models import ChatSession, ChatMessage, Post, Comment # Comment 모델 임포트
 
 # 🔧 시스템 경로 등록
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -258,3 +259,66 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author  # 작성자만 삭제 가능
+
+@login_required
+@csrf_exempt
+def like_post(request, pk):
+    post = get_object_or_404(Post, pk=pk)
+    user = request.user
+
+    if request.method == 'POST':
+        if user in post.likes.all():
+            post.likes.remove(user)
+            liked = False
+        else:
+            post.likes.add(user)
+            liked = True
+        
+        return JsonResponse({'liked': liked, 'likes_count': post.likes.count()})
+    return JsonResponse({'error': 'Invalid request', 'status': 400})
+
+@csrf_exempt
+def add_comment(request, pk):
+    if request.method == 'POST':
+        post = get_object_or_404(Post, pk=pk)
+        data = json.loads(request.body)
+        author_name = data.get('author_name')
+        password = data.get('password')
+        content = data.get('content')
+
+        if not all([author_name, password, content]):
+            return JsonResponse({'error': '모든 필드를 입력해주세요.'}, status=400)
+
+        hashed_password = make_password(password)
+
+        comment = Comment.objects.create(
+            post=post,
+            author_name=author_name,
+            password=hashed_password,
+            content=content
+        )
+        return JsonResponse({
+            'success': True,
+            'author_name': comment.author_name,
+            'content': comment.content,
+            'created_at': comment.created_at.strftime("%Y.%m.%d %H:%M"),
+            'comment_id': comment.id
+        })
+    return JsonResponse({'error': 'Invalid request', 'status': 400})
+
+@csrf_exempt
+def delete_comment(request, pk):
+    if request.method == 'POST':
+        comment = get_object_or_404(Comment, pk=pk)
+        data = json.loads(request.body)
+        password = data.get('password')
+
+        if not password:
+            return JsonResponse({'error': '비밀번호를 입력해주세요.'}, status=400)
+
+        if check_password(password, comment.password):
+            comment.delete()
+            return JsonResponse({'success': True})
+        else:
+            return JsonResponse({'error': '비밀번호가 일치하지 않습니다.'}, status=403)
+    return JsonResponse({'error': 'Invalid request', 'status': 400})

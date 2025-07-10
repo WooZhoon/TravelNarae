@@ -10,12 +10,176 @@
         <p>{{ post.content|linebreaksbr }}</p>
     </div>
 
-    <div class="d-flex justify-content-end">
-        <a href="{% url 'main:board_list' %}" class="btn btn-secondary me-2">목록으로</a>
-        {% if user.is_authenticated and user == post.author %}
-        <a href="{% url 'main:board_edit' post.pk %}" class="btn btn-warning me-2">수정</a>
-        <a href="{% url 'main:board_delete' post.pk %}" class="btn btn-danger">삭제</a>
-        {% endif %}
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            {% if user.is_authenticated %}
+            <button id="like-button" class="btn {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 24px; height: 24px;"> <span id="likes-count">{{ post.likes.count }}</span>
+            </button>
+            {% else %}
+            <button class="btn btn-outline-danger" disabled>
+                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 24px; height: 24px;"> <span id="likes-count">{{ post.likes.count }}</span>
+            </button>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{% url 'main:board_list' %}" class="btn btn-secondary me-2">목록으로</a>
+            {% if user.is_authenticated and user == post.author %}
+            <a href="{% url 'main:board_edit' post.pk %}" class="btn btn-warning me-2">수정</a>
+            <a href="{% url 'main:board_delete' post.pk %}" class="btn btn-danger">삭제</a>
+            {% endif %}
+        </div>
     </div>
+
+    <!-- Comments Section -->
+    <h3 class="mt-5 mb-3">댓글 ({{ post.comments.count }})</h3>
+    <div id="comments-list">
+        {% for comment in post.comments.all %}
+        <div class="card mb-2" id="comment-{{ comment.id }}">
+            <div class="card-body">
+                <h5 class="card-title mb-1">{{ comment.author_name }} <small class="text-muted ms-2">{{ comment.created_at|date:"Y.m.d H:i" }}</small></h5>
+                <p class="card-text">{{ comment.content|linebreaksbr }}</p>
+                <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="{{ comment.id }}">삭제</button>
+            </div>
+        </div>
+        {% empty %}
+        <p>아직 댓글이 없습니다.</p>
+        {% endfor %}
+    </div>
+
+    <h4 class="mt-4 mb-3">댓글 작성</h4>
+    <form id="comment-form" class="mb-5">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_author_name" class="form-label">이름</label>
+            <input type="text" class="form-control" id="id_author_name" name="author_name" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_password" class="form-label">비밀번호</label>
+            <input type="password" class="form-control" id="id_password" name="password" required>
+        </div>
+        <div class="mb-3">
+            <label for="id_content" class="form-label">내용</label>
+            <textarea class="form-control" id="id_content" name="content" rows="3" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">댓글 작성</button>
+    </form>
+
 </div>
+
+{% if user.is_authenticated %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButton = document.getElementById('like-button');
+        const likesCountSpan = document.getElementById('likes-count');
+
+        if (likeButton) {
+            likeButton.addEventListener('click', function() {
+                fetch('{% url "main:like_post" post.pk %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.liked !== undefined) {
+                        likesCountSpan.textContent = data.likes_count;
+                        if (data.liked) {
+                            likeButton.classList.remove('btn-outline-danger');
+                            likeButton.classList.add('btn-danger');
+                        } else {
+                            likeButton.classList.remove('btn-danger');
+                            likeButton.classList.add('btn-outline-danger');
+                        }
+                    } else if (data.error) {
+                        alert(data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+    });
+</script>
+{% endif %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const commentForm = document.getElementById('comment-form');
+        const commentsList = document.getElementById('comments-list');
+
+        // Add Comment
+        if (commentForm) {
+            commentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+
+                const formData = new FormData(commentForm);
+                const data = {};
+                formData.forEach((value, key) => { data[key] = value; });
+
+                fetch('{% url "main:add_comment" post.pk %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': data['csrfmiddlewaretoken'],
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.success) {
+                        const newCommentHtml = `
+                            <div class="card mb-2" id="comment-${result.comment_id}">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-1">${result.author_name} <small class="text-muted ms-2">${result.created_at}</small></h5>
+                                    <p class="card-text">${result.content.replace(/\n/g, '<br>')}</p>
+                                    <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="${result.comment_id}">삭제</button>
+                                </div>
+                            </div>
+                        `;
+                        commentsList.insertAdjacentHTML('beforeend', newCommentHtml);
+                        commentForm.reset(); // Clear form
+                    } else {
+                        alert('댓글 작성 실패: ' + result.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+
+        // Delete Comment (Event Delegation)
+        if (commentsList) {
+            commentsList.addEventListener('click', function(e) {
+                if (e.target.classList.contains('delete-comment-btn')) {
+                    const commentId = e.target.dataset.commentId;
+                    const password = prompt('댓글 비밀번호를 입력하세요:');
+
+                    if (password === null) { // User cancelled prompt
+                        return;
+                    }
+
+                    fetch(`/api/comments/${commentId}/delete/`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}', // Use a global CSRF token if available, or pass it from context
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ password: password })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            document.getElementById(`comment-${commentId}`).remove();
+                        } else {
+                            alert('댓글 삭제 실패: ' + result.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}
