@@ -30,7 +30,9 @@ TOUR_API_KEY = os.getenv("TOUR_API_KEY")
 DEBUG = True
 
 ALLOWED_HOSTS = ['*']
-
+CSRF_TRUSTED_ORIGINS = [
+    "https://ac968437035a.ngrok-free.app",
+]
 
 # Application definition
 
