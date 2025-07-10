@@ -69,7 +69,7 @@
             <textarea class="form-control" name="content" placeholder="내용을 입력하세요" required rows="3" style="flex: 1;"></textarea>
             <div class="d-flex flex-column gap-2">
                 <button type="submit" class="btn btn-primary">등록</button>
-                <button type="submit" class="btn btn-outline-primary">등록+추천</button>
+                <button type="button" id="add-comment-and-like" class="btn btn-outline-primary">등록+추천</button>
             </div>
         </div>
     </form>
@@ -133,39 +133,79 @@
         if (commentForm) {
             commentForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-
-                const formData = new FormData(commentForm);
-                const data = {};
-                formData.forEach((value, key) => { data[key] = value; });
-
-                fetch('{% url "main:add_comment" post.pk %}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': data['csrfmiddlewaretoken'],
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success) {
-                        const newCommentHtml = `
-                            <div class="card mb-2" id="comment-${result.comment_id}">
-                                <div class="card-body">
-                                    <h5 class="card-title mb-1">${result.author_name} <small class="text-muted ms-2">${result.created_at}</small></h5>
-                                    <p class="card-text">${result.content.replace(/\n/g, '<br>')}</p>
-                                    <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="${result.comment_id}">삭제</button>
-                                </div>
-                            </div>
-                        `;
-                        commentsList.insertAdjacentHTML('beforeend', newCommentHtml);
-                        commentForm.reset(); // Clear form
-                    } else {
-                        alert('댓글 작성 실패: ' + result.error);
-                    }
-                })
-                .catch(error => console.error('Error:', error));
+                addComment();
             });
+
+            const addCommentAndLikeBtn = document.getElementById('add-comment-and-like');
+            if (addCommentAndLikeBtn) {
+                addCommentAndLikeBtn.addEventListener('click', function() {
+                    addComment(true);
+                });
+            }
+        }
+
+        function addComment(like = false) {
+            const formData = new FormData(commentForm);
+            const data = {};
+            formData.forEach((value, key) => { data[key] = value; });
+
+            fetch('{% url "main:add_comment" post.pk %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': data['csrfmiddlewaretoken'],
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    const newCommentHtml = `
+                        <div class="card mb-2" id="comment-${result.comment_id}">
+                            <div class="card-body">
+                                <h5 class="card-title mb-1">${result.author_name} <small class="text-muted ms-2">${result.created_at}</small></h5>
+                                <p class="card-text">${result.content.replace(/\n/g, '<br>')}</p>
+                                <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="${result.comment_id}">삭제</button>
+                            </div>
+                        </div>
+                    `;
+                    commentsList.insertAdjacentHTML('beforeend', newCommentHtml);
+                    commentForm.reset(); // Clear form
+
+                    if (like) {
+                        likePost(true);
+                    }
+                } else {
+                    alert('댓글 작성 실패: ' + result.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+        function likePost(force = false) {
+            fetch('{% url "main:like_post" post.pk %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ force_like: force })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.liked !== undefined) {
+                    const likesCountSpan = document.getElementById('likes-count');
+                    likesCountSpan.textContent = data.likes_count;
+                    if (data.liked) {
+                        likesCountSpan.classList.add('liked-bold');
+                    } else {
+                        likesCountSpan.classList.remove('liked-bold');
+                    n                    }
+                } else if (data.error) {
+                    alert(data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
         }
 
         // Delete Comment (Event Delegation)

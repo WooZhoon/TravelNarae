@@ -249,8 +249,16 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('main:board_list')  # 작성 성공 시 이동할 URL
 
     def form_valid(self, form):
-        form.instance.author = self.request.user  # 작성자를 현재 로그인한 사용자로 설정
-        return super().form_valid(form)
+        form.instance.author = self.request.user
+        response = super().form_valid(form)
+        
+        action = self.request.POST.get('action')
+        if action == 'save_and_like':
+            user = self.request.user
+            if user not in self.object.likes.all():
+                self.object.likes.add(user)
+        
+        return response
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
@@ -278,12 +286,20 @@ def like_post(request, pk):
     user = request.user
 
     if request.method == 'POST':
-        if user in post.likes.all():
-            post.likes.remove(user)
-            liked = False
-        else:
-            post.likes.add(user)
+        data = json.loads(request.body or '{}')
+        force_like = data.get('force_like', False)
+
+        if force_like:
+            if user not in post.likes.all():
+                post.likes.add(user)
             liked = True
+        else:
+            if user in post.likes.all():
+                post.likes.remove(user)
+                liked = False
+            else:
+                post.likes.add(user)
+                liked = True
         
         return JsonResponse({'liked': liked, 'likes_count': post.likes.count()})
     return JsonResponse({'error': 'Invalid request', 'status': 400})
