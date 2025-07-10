@@ -42,7 +42,7 @@ body {
 
 
 .land.focused {
-  transform: scale(1.5);
+  transform: scale(1.5) !important;
   fill: #FF6600 !important;
 }
 
@@ -52,7 +52,7 @@ body {
 }
 
 .land.small-region.focused {
-  transform: scale(3);
+  transform: scale(3) !important;
   fill: #FF6600 !important;
 }
 
