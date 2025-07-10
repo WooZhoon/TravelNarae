@@ -249,16 +249,8 @@ class PostCreateView(LoginRequiredMixin, CreateView):
     success_url = reverse_lazy('main:board_list')  # 작성 성공 시 이동할 URL
 
     def form_valid(self, form):
-        form.instance.author = self.request.user
-        response = super().form_valid(form)
-        
-        action = self.request.POST.get('action')
-        if action == 'save_and_like':
-            user = self.request.user
-            if user not in self.object.likes.all():
-                self.object.likes.add(user)
-        
-        return response
+        form.instance.author = self.request.user  # 작성자를 현재 로그인한 사용자로 설정
+        return super().form_valid(form)
 
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post

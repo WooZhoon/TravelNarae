@@ -14,8 +14,7 @@
             <label for="{{ form.content.id_for_label }}" class="form-label">내용</label>
             {{ form.content }}
         </div>
-        <button type="submit" name="action" value="save" class="btn btn-primary">저장</button>
-        <button type="submit" name="action" value="save_and_like" class="btn btn-success">등록+추천</button>
+        <button type="submit" name="action" value="save" class="btn btn-primary">{% if form.instance.pk %}수정{% else %}저장{% endif %}</button>
         <a href="{% url 'main:board_list' %}" class="btn btn-secondary">취소</a>
     </form>
 </div>
