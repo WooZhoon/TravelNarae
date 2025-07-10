@@ -19,20 +19,22 @@
         <p>{{ post.content|linebreaksbr }}</p>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="d-flex justify-content-end mb-3">
+        <a href="{% url 'main:board_list' %}" class="action-link">목록으로</a>
+    </div>
+
+    <div class="d-flex justify-content-center mb-3">
         <div>
             {% if user.is_authenticated %}
-            <button id="like-button" class="btn {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}">
-                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 24px; height: 24px;"> <span id="likes-count">{{ post.likes.count }}</span>
-            </button>
+            <div class="d-flex flex-column align-items-center">
+                <img id="like-image" src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 60px; height: 60px; cursor: pointer;">
+                <span id="likes-count" class="likes-count mt-2">{{ post.likes.count }}</span>
+            </div>
             {% else %}
             <button class="btn btn-outline-danger" disabled>
                 <img src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 24px; height: 24px;"> <span id="likes-count">{{ post.likes.count }}</span>
             </button>
             {% endif %}
-        </div>
-        <div>
-            <a href="{% url 'main:board_list' %}" class="btn btn-secondary me-2">목록으로</a>
         </div>
     </div>
 
@@ -75,11 +77,22 @@
 {% if user.is_authenticated %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const likeButton = document.getElementById('like-button');
+        const likeImage = document.getElementById('like-image');
         const likesCountSpan = document.getElementById('likes-count');
 
-        if (likeButton) {
-            likeButton.addEventListener('click', function() {
+        // 페이지 로드 시 좋아요 상태에 따라 굵게 표시
+        {% if user.is_authenticated and user in post.likes.all %}
+            likesCountSpan.classList.add('liked-bold');
+        {% endif %}
+
+        if (likeImage) {
+            likeImage.addEventListener('click', function() {
+                // 뿅 효과 추가
+                likeImage.classList.add('like-pop-effect');
+                likeImage.addEventListener('animationend', () => {
+                    likeImage.classList.remove('like-pop-effect');
+                }, { once: true });
+
                 fetch('{% url "main:like_post" post.pk %}', {
                     method: 'POST',
                     headers: {
@@ -92,12 +105,11 @@
                 .then(data => {
                     if (data.liked !== undefined) {
                         likesCountSpan.textContent = data.likes_count;
+                        // 좋아요 상태에 따라 굵게 표시 토글
                         if (data.liked) {
-                            likeButton.classList.remove('btn-outline-danger');
-                            likeButton.classList.add('btn-danger');
+                            likesCountSpan.classList.add('liked-bold');
                         } else {
-                            likeButton.classList.remove('btn-danger');
-                            likeButton.classList.add('btn-outline-danger');
+                            likesCountSpan.classList.remove('liked-bold');
                         }
                     } else if (data.error) {
                         alert(data.error);

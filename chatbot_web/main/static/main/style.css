@@ -221,3 +221,19 @@ body {
     font-weight: bold;
     text-decoration: underline;
 }
+
+/* 좋아요 뿅 효과 */
+@keyframes likePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.like-pop-effect {
+  animation: likePop 0.3s ease-out;
+}
+
+/* 좋아요 수 굵게 표시 */
+.likes-count.liked-bold {
+  font-weight: bold;
+}
