@@ -94,7 +94,7 @@ body > main {
 /* 전체 채팅 영역 */
 .chat-wrapper {
   margin-left: 120px;   /* 사이드바 폭만큼 오른쪽으로 */
-  /* height: calc(100vh - 140px); */
+  margin-bottom: 60px;
   display: flex;
   flex-direction: column;
   box-sizing: border-box;
@@ -102,27 +102,25 @@ body > main {
 }
 
 .chat-wrapper.sidebar-collapsed {
-  margin-left: 50px;
+  margin-left: 15px;
 }
 
 /* 메인 채팅 영역: 중앙 배치 */
 .chat-main {
   flex: 1;
   background-color: #fff;
-  /* overflow-y: visible; */
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;  /* 가로 중앙 */
   justify-content: flex-start;  /* 세로 중앙 */
-  /* padding: 20px 20px 10px 20px; 상하좌우 패딩 추가 */
   max-width: 800px; /* 최대 너비 설정 */
   margin: 0 auto; /* 중앙 정렬 */
 }
 
 .message {
   padding: 10px 15px;
-  border-radius: 18px;
+  border-radius: 15px;
   margin-bottom: 10px;
   max-width: 70%;
   word-wrap: break-word;
@@ -177,7 +175,7 @@ body > main {
   border: 1px solid #ddd;
   border-radius: 30px;
   padding: 8px 12px;
-  width: 100%;
+  width: 80%;
   max-width: 800px; /* Keep max-width for larger screens */
   box-sizing: border-box; /* Ensure padding is included in the width */
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
