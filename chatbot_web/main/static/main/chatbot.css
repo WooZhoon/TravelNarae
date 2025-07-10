@@ -115,7 +115,9 @@ body > main {
   flex-direction: column;
   align-items: center;  /* 가로 중앙 */
   justify-content: flex-start;  /* 세로 중앙 */
-  padding-bottom: 100px;
+  /* padding: 20px 20px 10px 20px; 상하좌우 패딩 추가 */
+  max-width: 800px; /* 최대 너비 설정 */
+  margin: 0 auto; /* 중앙 정렬 */
 }
 
 .message {
@@ -168,17 +170,20 @@ body > main {
 
 .chat-input-wrapper {
   position: fixed;
-  bottom: 0;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
   background-color: #ffffff;
   border: 1px solid #ddd;
   border-radius: 30px;
   padding: 8px 12px;
   width: 100%;
-  max-width: 800px;
+  max-width: 800px; /* Keep max-width for larger screens */
+  box-sizing: border-box; /* Ensure padding is included in the width */
   box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   align-items: center;
-  margin-bottom: 25px;
+  
   z-index: 950;
 }
 
