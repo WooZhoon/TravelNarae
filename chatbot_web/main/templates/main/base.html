@@ -44,6 +44,7 @@
               {% if request.user.is_authenticated %}
                 <span class="navbar-text me-3">{{ request.user.first_name }}님, 환영합니다!</span>
                 <a class="btn btn-outline-secondary" href="{% url 'main:logout' %}">로그아웃</a>
+                <a class="btn btn-outline-primary ms-2" href="{% url 'main:profile' %}">마이페이지</a>
               {% else %}
                 <a class="btn btn-outline-primary me-2" href="{% url 'main:login' %}">로그인</a>
               {% endif %}

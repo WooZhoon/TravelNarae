@@ -45,8 +45,28 @@ def board(request):
     return render(request, 'main/board.html')
 
 
+from datetime import date
+
+@login_required
 def profile(request):
-    return render(request, 'main/profile.html')
+    user = request.user
+
+    # 챗봇 대화 수
+    chat_session_count = ChatSession.objects.filter(user=user).count()
+
+    # 내가 쓴 글 갯수
+    post_count = Post.objects.filter(author=user).count()
+
+    # 가입일로부터 경과 일수 계산
+    today = date.today()
+    days_since_joined = (today - user.date_joined.date()).days
+
+    context = {
+        'chat_session_count': chat_session_count,
+        'post_count': post_count,
+        'days_since_joined': days_since_joined,
+    }
+    return render(request, 'main/profile.html', context)
 
 # ===================================================
 # 🔐 사용자 인증
@@ -96,6 +116,19 @@ def signup(request):
         return redirect('main:home')
 
     return render(request, 'main/signup.html')
+
+@login_required
+def profile_edit_view(request):
+    if request.method == 'POST':
+        form = UserChangeForm(request.POST, instance=request.user)
+        if form.is_valid():
+            form.save()
+            messages.success(request, '프로필이 성공적으로 업데이트되었습니다.')
+            return redirect('main:profile')
+    else:
+        form = UserChangeForm(instance=request.user)
+    return render(request, 'main/profile_edit.html', {'form': form})
+
 
 # ===================================================
 # 💬 채팅 시스템: 페이지 + 대화 처리
@@ -282,7 +315,7 @@ def map_view(request):
 # ===================================================
 
 from django.db.models import Count # Count 임포트 추가
-from .forms import CommentForm # CommentForm 임포트 추가
+from .forms import CommentForm, UserChangeForm # UserChangeForm 임포트 추가
 
 class PostListView(ListView):
     model = Post
