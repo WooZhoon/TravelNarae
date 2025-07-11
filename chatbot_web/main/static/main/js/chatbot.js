@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // 3. Then collapse the sidebar
             chatSidebar.classList.add('collapsed');
             chatWrapper.classList.add('sidebar-collapsed');
+            toggleIcon.textContent = 'chevron_right'; // 아이콘 변경
 
         } else {
             // --- EXPANDING THE SIDEBAR ---
