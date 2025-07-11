@@ -35,8 +35,9 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='comments_made') # 추가된 user 필드
     parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies') # 대댓글을 위한 부모 댓글 필드
-    author_name = models.CharField(max_length=50)
+    author_name = models.CharField(max_length=50) # 기존 author_name 유지
     password = models.CharField(max_length=128) # 비밀번호 해싱을 위해 128자로 설정
     content = models.TextField()
     is_deleted_by_admin = models.BooleanField(default=False) # 관리자 삭제 여부 필드 추가

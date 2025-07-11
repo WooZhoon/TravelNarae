@@ -57,6 +57,9 @@ def profile(request):
     # 내가 쓴 글 갯수
     post_count = Post.objects.filter(author=user).count()
 
+    # 내가 쓴 댓글 갯수
+    comment_count = Comment.objects.filter(user=user).count()
+
     # 가입일로부터 경과 일수 계산
     today = date.today()
     days_since_joined = (today - user.date_joined.date()).days
@@ -64,6 +67,7 @@ def profile(request):
     context = {
         'chat_session_count': chat_session_count,
         'post_count': post_count,
+        'comment_count': comment_count,
         'days_since_joined': days_since_joined,
     }
     return render(request, 'main/profile.html', context)
@@ -93,12 +97,16 @@ def logout_request(request):
     return redirect('main:home')
 
 
+from django.core.mail import send_mail
+from django.conf import settings
+
 def signup(request):
     if request.method == "POST":
         username = request.POST.get('username')
         password = request.POST.get('password')
         password2 = request.POST.get('password2')
         nickname = request.POST.get('nickname')
+        email = request.POST.get('email') # 이메일 필드 추가
 
         if password != password2:
             messages.error(request, "비밀번호가 일치하지 않습니다.")
@@ -108,9 +116,24 @@ def signup(request):
             messages.error(request, "이미 존재하는 아이디입니다.")
             return render(request, 'main/signup.html')
 
-        user = User.objects.create_user(username=username, password=password)
+        if User.objects.filter(email=email).exists():
+            messages.error(request, "이미 가입된 이메일 주소입니다.")
+            return render(request, 'main/signup.html')
+
+        user = User.objects.create_user(username=username, password=password, email=email)
         user.first_name = nickname  # 임시 닉네임 저장
         user.save()
+
+        # 환영 이메일 전송
+        try:
+            subject = '여행 나래에 오신 것을 환영합니다!'
+            message = f'안녕하세요, {nickname}님! 여행 나래에 가입해주셔서 감사합니다.\n\n저희 서비스와 함께 즐거운 여행 계획을 세워보세요!'
+            from_email = settings.EMAIL_HOST_USER
+            recipient_list = [email]
+            send_mail(subject, message, from_email, recipient_list, fail_silently=False)
+            messages.success(request, "회원가입이 완료되었습니다. 환영 이메일이 전송되었습니다.")
+        except Exception as e:
+            messages.warning(request, f"회원가입은 완료되었으나, 환영 이메일 전송에 실패했습니다: {e}")
 
         login(request, user)
         return redirect('main:home')
@@ -418,7 +441,10 @@ def add_comment(request, pk):
         author_name = data.get('author_name')
         password = data.get('password')
         content = data.get('content')
-        parent_id = data.get('parent_id') # parent_id 추가
+        parent_id = data.get('parent_id')
+
+        # 로그인한 사용자인 경우 user 필드에 저장
+        comment_user = request.user if request.user.is_authenticated else None
 
         if not all([author_name, password, content]):
             return JsonResponse({'error': '모든 필드를 입력해주세요.'}, status=400)
@@ -428,15 +454,15 @@ def add_comment(request, pk):
         if parent_id:
             try:
                 parent_comment = Comment.objects.get(pk=parent_id)
-                # 대댓글에 대댓글을 달 수 없도록 제한
-                if parent_comment.parent: # 이미 부모가 있는 댓글이라면
+                if parent_comment.parent:
                     return JsonResponse({'error': '대댓글에는 다시 대댓글을 달 수 없습니다.'}, status=400)
             except Comment.DoesNotExist:
                 return JsonResponse({'error': '부모 댓글을 찾을 수 없습니다.'}, status=404)
 
         comment = Comment.objects.create(
             post=post,
-            parent=parent_comment, # parent 필드 추가
+            user=comment_user, # user 필드 추가
+            parent=parent_comment,
             author_name=author_name,
             password=hashed_password,
             content=content
@@ -447,7 +473,7 @@ def add_comment(request, pk):
             'content': comment.content,
             'created_at': comment.created_at.strftime("%Y.%m.%d %H:%M"),
             'comment_id': comment.id,
-            'parent_id': comment.parent_id # parent_id 반환
+            'parent_id': comment.parent_id
         })
     return JsonResponse({'error': 'Invalid request', 'status': 400})
 

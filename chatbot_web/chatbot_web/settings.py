@@ -45,7 +45,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "widget_tweaks",
     'main',
+    'django.contrib.sites', # 추가
 ]
+
+SITE_ID = 1 # 추가
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -140,3 +143,14 @@ LOGIN_URL = 'main:login'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Email settings
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com') # 기본값 Gmail
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587)) # 기본값 587 (TLS)
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
+
+# Password reset URL for email
+PASSWORD_RESET_CONFIRM_URL = 'main:password_reset_confirm'

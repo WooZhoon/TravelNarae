@@ -1,5 +1,7 @@
-from django.urls import path
+from django.urls import path, include, reverse_lazy # include, reverse_lazy 추가
 from . import views
+from django.contrib.auth import views as auth_views # Django 기본 인증 뷰 임포트
+from .forms import CustomPasswordResetForm # CustomPasswordResetForm 임포트
 
 app_name = 'main'
 
@@ -7,7 +9,6 @@ urlpatterns = [
     path('', views.index, name='home'),
     path('chatbot/', views.chatbot_redirect_to_latest_session, name='chatbot'),
     path('chatbot/new/', views.chatbot, name='chatbot_new'),
-    # path('board/', views.board, name='board'), # <-- 이 줄은 제거
     path('login/', views.login_view, name='login'),
     path('api/chat/', views.chat_api, name='chat_api'),
     path("logout/", views.logout_request, name="logout"),
@@ -16,8 +17,23 @@ urlpatterns = [
     path('signup/', views.signup, name='signup'),
     path('chatbot/<int:session_id>/', views.chat_bot_view, name='chat_bot'),
     path('api/chat/session/<int:session_id>/delete/', views.delete_chat_session, name='delete_chat_session'),
-    path('recommendation/', views.recommendation, name='recommendation'),  # 임시
+    path('recommendation/', views.recommendation, name='recommendation'),
     path('map/', views.map_view, name='map'),
+
+    # 비밀번호 재설정 URL
+    path('password_reset/', auth_views.PasswordResetView.as_view(
+        template_name='main/password_reset_form.html',
+        email_template_name='main/password_reset_email.html',
+        subject_template_name='main/password_reset_subject.txt', # 제목 템플릿 명시
+        success_url=reverse_lazy('main:password_reset_done'),
+        form_class=CustomPasswordResetForm # CustomPasswordResetForm 사용
+    ), name='password_reset'),
+    path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='main/password_reset_done.html'), name='password_reset_done'),
+    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
+        template_name='main/password_reset_confirm.html',
+        success_url=reverse_lazy('main:password_reset_complete')
+    ), name='password_reset_confirm'),
+    path('reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='main/password_reset_complete.html'), name='password_reset_complete'),
 
     # 게시판 URL
     path('board/', views.PostListView.as_view(), name='board_list'),
