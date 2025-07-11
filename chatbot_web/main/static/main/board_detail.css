@@ -190,7 +190,7 @@ body {
     background-color: #dc3545;
     border: none;
     border-radius: 0.4rem;
-    padding: 0.3rem 0.8rem;
+    padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
     color: white;
     transition: background-color 0.2s ease-in-out;
@@ -198,6 +198,12 @@ body {
 
 .comment-delete-btn:hover {
     background-color: #c82333;
+}
+
+.reply-btn {
+    border-radius: 0.4rem;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.8rem;
 }
 
 .comment-card.deleted-by-admin {
