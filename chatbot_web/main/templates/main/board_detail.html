@@ -41,9 +41,10 @@
                 <span id="likes-count" class="likes-count">{{ post.likes.count }}</span>
             </div>
             {% else %}
-            <button class="btn btn-outline-danger" disabled>
-                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" class="like-image"> <span id="likes-count">{{ post.likes.count }}</span>
-            </button>
+            <div class="d-flex flex-column align-items-center not-logged-in-like-section">
+                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" class="like-image">
+                <span id="likes-count" class="likes-count">{{ post.likes.count }}</span>
+            </div>
             {% endif %}
         </div>
     </div>
