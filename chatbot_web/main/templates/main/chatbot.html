@@ -59,8 +59,8 @@
     {% endif %}
   </p>
   <h2 class="chat-title">삐삐삣?</h2>
-    {% if messages %}
-      {% for msg in messages %}
+    {% if chat_messages %}
+      {% for msg in chat_messages %}
         <div class="message {{ msg.role }}-message markdown-content">{{ msg.content|safe }}</div>
       {% endfor %}
     {% else %}

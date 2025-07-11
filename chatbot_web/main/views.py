@@ -67,6 +67,7 @@ def login_view(request):
 
 def logout_request(request):
     logout(request)
+    messages.info(request, "로그아웃 되었습니다.")
     return redirect('main:home')
 
 
@@ -123,12 +124,12 @@ def chat_bot_view(request, session_id):
     user = request.user
     sessions = ChatSession.objects.filter(user=user).order_by('-created_at')
     selected_session = get_object_or_404(ChatSession, id=session_id, user=user)
-    messages = selected_session.messages.order_by('timestamp')
+    chat_messages = selected_session.messages.order_by('timestamp')
 
     return render(request, 'main/chatbot.html', {
         'sessions': sessions,
         'selected_session': selected_session,
-        'messages': messages,
+        'chat_messages': chat_messages,
     })
 
 # ===================================================
