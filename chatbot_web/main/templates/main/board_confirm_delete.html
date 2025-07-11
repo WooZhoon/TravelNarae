@@ -1,6 +1,10 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'main/board_detail.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
     <h2 class="mb-4">게시글 삭제 확인</h2>

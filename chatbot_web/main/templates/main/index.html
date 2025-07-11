@@ -1,5 +1,16 @@
 {% extends 'main/base.html' %}
 
+{% block extra_head %}
+<style>
+  .main-content h1 {
+    color: #F0E5D8;
+  }
+  .main-content p.text-muted {
+    color: #A08F7E !important; /* Bootstrap의 text-muted 클래스보다 우선순위를 높이기 위해 !important 사용 */
+  }
+</style>
+{% endblock %}
+
 {% block content %}
 {% load static %}
   <div class="container">

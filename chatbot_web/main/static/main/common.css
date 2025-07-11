@@ -14,6 +14,21 @@ body {
     color: #343a40;
 }
 
+/* Custom Card Component */
+.custom-card {
+  height: 450px;
+}
+
+/* Custom Image Top Component */
+.custom-image-top {
+  height: 160px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-top-left-radius: 1rem;
+  border-top-right-radius: 1rem;
+}
+
 /* Layout - Sidebar */
 .sidebar-modern {
   width: 240px;
@@ -75,7 +90,7 @@ body {
 .top-header-modern {
   position: fixed;
   top: 0;
-  left: 220px;
+  left: 0;
   right: 0;
   height: 60px;
   background-color: #121F28; /* 평균 남색 */
@@ -141,24 +156,25 @@ body {
 }
 
 .top-header-modern .navbar-brand {
-  color: white !important;
+  color: #FFF5E1 !important;
   transition: color 0.3s ease;
 }
 
 .top-header-modern .navbar-brand:hover {
-  color: #E5D3B5 !important;
+  color: #b68a00 !important;
 }
 
 .top-header-modern .nav-link {
-  color: white !important; /* 기본 글자색 흰색 */
+  color: #F0E5D8; /* 기본 글자색 설정 */
 }
 
 .top-header-modern .nav-link.active {
-  color: #E5D3B5 !important; /* 평균 색상 */
+  color: #4e4637 !important; /* 요청하신 색상 */
+  font-weight: bold !important;
 }
 
 .top-header-modern .nav-link:hover {
-  color: #E5D3B5 !important; /* 평균 색상 */
+  color: #4e4637 !important; /* 요청하신 색상 */
   background-color: #152238;
 }
 
@@ -196,7 +212,7 @@ body {
 }
 
 .main-content h1, .main-content p {
-  color: #E0E0E0 !important;
+  color: #E0E0E0;
 }
 
 .container.mt-5 {

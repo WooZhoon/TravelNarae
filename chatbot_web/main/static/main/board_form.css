@@ -91,7 +91,7 @@
 
 .btn-secondary:hover {
     background-position: 100% 0%; /* 호버 시 위치 이동 */
-    box-shadow: 0 8px 16px rgba(108, 117, 125, 0.4);
+    box-shadow: 0 8px 16px rgba(56, 70, 80, 0.4);
     transform: translateY(-4px); /* 더 큰 위로 뜨는 효과 */
 }
 
