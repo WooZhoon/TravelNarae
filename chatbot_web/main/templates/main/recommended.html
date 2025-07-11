@@ -22,46 +22,86 @@
 <body class="p-4">
   <div class="container">
     <h2 class="mb-4 text-center">추천 여행지 선택</h2>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+    </ul>
+    {% endif %}
 
-    <!-- 📅 여행 날짜 선택 -->
-    <div class="mb-3">
-      <label for="travel-dates" class="form-label">여행 기간</label>
-      <input type="text" id="travel-dates" class="form-control" placeholder="시작일 ~ 종료일 선택">
-    </div>
+    <form method="post">
+      {% csrf_token %}
+      <!-- 📅 여행 날짜 선택 -->
+      <div class="mb-3">
+        <label for="travel-dates" class="form-label">여행 기간</label>
+        <input type="text" id="travel-dates" class="form-control" placeholder="시작일 ~ 종료일 선택" name="travel-dates">
+      </div>
 
-    <!-- 📍 지역 선택 -->
-    <div class="mb-3">
-      <label class="form-label">여행 지역</label>
-      <div class="row g-2">
+      <!-- 📍 지역 선택 -->
+      <div class="mb-3">
+        <label class="form-label">여행 지역</label>
+        <div class="row g-2">
+          <div class="col-md-6">
+            <select id="region" class="form-select">
+              <option value="">-- 시/도 선택 --</option>
+            </select>
+          </div>
+          <div class="col-md-6">
+            <select id="sub-region" class="form-select" disabled>
+              <option value="">-- 세부 지역 선택 --</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- 👥 인원 수 -->
+      <div class="mb-3 row">
         <div class="col-md-6">
-          <select id="region" class="form-select">
-            <option value="">-- 시/도 선택 --</option>
-          </select>
+          <label for="adults" class="form-label">성인 수</label>
+          <input type="number" id="adults" class="form-control" min="1" value="1">
         </div>
         <div class="col-md-6">
-          <select id="sub-region" class="form-select" disabled>
-            <option value="">-- 세부 지역 선택 --</option>
-          </select>
+          <label for="children" class="form-label">어린이 수</label>
+          <input type="number" id="children" class="form-control" min="0" value="0">
         </div>
       </div>
-    </div>
 
-    <!-- 👥 인원 수 -->
-    <div class="mb-3 row">
-      <div class="col-md-6">
-        <label for="adults" class="form-label">성인 수</label>
-        <input type="number" id="adults" class="form-control" min="1" value="1">
+      <!-- ✅ 추천 버튼 -->
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary">추천 받기</button>
       </div>
-      <div class="col-md-6">
-        <label for="children" class="form-label">어린이 수</label>
-        <input type="number" id="children" class="form-control" min="0" value="0">
-      </div>
-    </div>
+    </form>
+  </div>
 
-    <!-- ✅ 추천 버튼 -->
-    <div class="text-center">
-      <button class="btn btn-primary">추천 받기</button>
+  <!-- 추천 결과 표시 -->
+  <div class="container mt-5">
+    <h3 class="mb-4 text-center">추천 여행지</h3>
+    {% if recommended_items %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+      {% for item in recommended_items %}
+      <div class="col">
+        <div class="card h-100 shadow-sm">
+          {% if item.firstimage %}
+          <img src="{{ item.firstimage }}" class="card-img-top" alt="{{ item.title }}">
+          {% else %}
+          <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" alt="이미지 없음">
+          {% endif %}
+          <div class="card-body">
+            <h5 class="card-title">{{ item.title }}</h5>
+            <p class="card-text">{{ item.addr1 }}</p>
+            {% if item.tel %}
+            <p class="card-text"><small class="text-muted">전화: {{ item.tel }}</small></p>
+            {% endif %}
+            <a href="https://search.naver.com/search.naver?query={{ item.title }}" target="_blank" class="btn btn-sm btn-outline-primary">자세히 보기</a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
     </div>
+    {% else %}
+    <p class="text-center text-muted">아직 추천 여행지가 없습니다. 조건을 선택하고 '추천 받기' 버튼을 눌러주세요.</p>
+    {% endif %}
   </div>
 
   <!-- ✅ 기능 스크립트 -->

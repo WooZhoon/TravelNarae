@@ -16,6 +16,8 @@ from dotenv import load_dotenv
 import json
 import sys
 import os
+import requests
+from urllib.parse import quote_plus
 
 # 🔧 로컬 모델
 from .models import ChatSession, ChatMessage, Post, Comment # Comment 모델 임포트
@@ -210,8 +212,53 @@ def delete_chat_session(request, session_id):
 
 
 def recommendation(request):
+    tour_api_key = os.getenv("TOUR_API_KEY")
+    recommended_items = []
+
+    if request.method == 'POST':
+        area_code = request.POST.get('region')
+        sigungu_code = request.POST.get('sub-region')
+        # travel_dates = request.POST.get('travel-dates') # 현재는 사용하지 않음
+        # adults = request.POST.get('adults') # 현재는 사용하지 않음
+        # children = request.POST.get('children') # 현재는 사용하지 않음
+
+        # 한국관광공사 API 호출 (지역 기반 관광 정보 조회)
+        url = "https://apis.data.go.kr/B551011/KorService2/areaBasedList2"
+        params = {
+            'serviceKey': quote_plus(tour_api_key),
+            'MobileOS': 'ETC',
+            'MobileApp': 'MyApp',
+            '_type': 'json',
+            'numOfRows': 10,  # 일단 10개만 가져오도록 설정
+            'pageNo': 1,
+            'areaCode': area_code,
+            'sigunguCode': sigungu_code,
+            'contentTypeId': 12, # 관광지 (임시)
+        }
+
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()  # HTTP 오류 발생 시 예외 발생
+            data = response.json()
+            
+            # API 응답 구조에 따라 데이터 파싱
+            if data and data['response']['body']['items']:
+                items = data['response']['body']['items']['item']
+                if isinstance(items, dict): # 단일 항목일 경우 리스트로 변환
+                    recommended_items.append(items)
+                else:
+                    recommended_items = items
+            else:
+                messages.info(request, "해당 지역에 대한 추천 여행지가 없습니다.")
+
+        except requests.exceptions.RequestException as e:
+            messages.error(request, f"API 호출 중 오류 발생: {e}")
+        except KeyError:
+            messages.error(request, "API 응답 구조가 예상과 다릅니다.")
+
     return render(request, 'main/recommended.html', {
-        'TOUR_API_KEY': os.getenv("TOUR_API_KEY")
+        'TOUR_API_KEY': tour_api_key,
+        'recommended_items': recommended_items,
     })
 
 def map_view(request):

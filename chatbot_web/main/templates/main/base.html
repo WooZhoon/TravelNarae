@@ -3,6 +3,8 @@
 <html lang="ko">
 <head>
 
+  <head>
+  <link rel="icon" href="{% static 'main/images/TravelNarae.PNG' %}" type="image/png">
   <link rel="stylesheet" href="{% static 'main/style.css' %}">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -18,7 +20,10 @@
 
   <nav class="navbar navbar-expand-lg navbar-light bg-white border-bottom shadow-sm fixed-top">
     <div class="container">
-      <a class="navbar-brand fw-bold" href="{% url 'main:home' %}">여행 나래</a>
+      <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'main:home' %}">
+        <img src="{% static 'main/images/TravelNarae.PNG' %}" alt="TravelNarae Logo" height="40" class="d-inline-block me-2">
+        여행 나래
+      </a>
           <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar">
             <span class="navbar-toggler-icon"></span>
           </button>
