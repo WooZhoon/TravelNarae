@@ -25,6 +25,7 @@ class Post(models.Model):
     likes = models.ManyToManyField(User, related_name='liked_posts', blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_announcement = models.BooleanField(default=False) # 공지 여부 필드 추가
 
     def __str__(self):
         return self.title
@@ -37,6 +38,7 @@ class Comment(models.Model):
     author_name = models.CharField(max_length=50)
     password = models.CharField(max_length=128) # 비밀번호 해싱을 위해 128자로 설정
     content = models.TextField()
+    is_deleted_by_admin = models.BooleanField(default=False) # 관리자 삭제 여부 필드 추가
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

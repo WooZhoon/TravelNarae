@@ -1,84 +1,102 @@
 {% extends 'main/base.html' %}
 {% load static %}
 
+{% block extra_head %}
+  <link rel="stylesheet" href="{% static 'main/board_detail.css' %}">
+{% endblock %}
+
 {% block content %}
 <div class="container mt-5">
-    <h2 class="mb-3">{{ post.title }}</h2>
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <p class="text-muted mb-0">작성자: {{ post.author.username }} | 작성일: {{ post.created_at|date:"Y.m.d H:i" }}</p>
-        {% if user.is_authenticated and user == post.author %}
-        <div>
-            <a href="{% url 'main:board_edit' post.pk %}" class="action-link">수정</a>
-            <span class="text-muted">|</span>
-            <a href="{% url 'main:board_delete' post.pk %}" class="action-link">삭제</a>
+    <div class="post-detail-card">
+        <div class="post-detail-header">
+            <h2>{{ post.title }}</h2>
+            <div class="d-flex justify-content-between align-items-center">
+                <p class="post-meta-info mb-0">작성자: {{ post.author.username }} | 작성일: {{ post.created_at|date:"Y.m.d H:i" }}</p>
+                {% if user.is_authenticated %}
+                {% if user == post.author or user.is_superuser %}
+                <div class="d-flex align-items-center gap-2">
+                    {% if user.is_superuser %}
+                    <button id="toggle-announcement-btn" class="action-btn primary">{% if post.is_announcement %}공지 해제{% else %}공지 설정{% endif %}</button>
+                    {% endif %}
+                    <a href="{% url 'main:board_edit' post.pk %}" class="action-btn">수정</a>
+                    <a href="{% url 'main:board_delete' post.pk %}" class="action-btn danger">삭제</a>
+                </div>
+                {% endif %}
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
-    </div>
-    <hr>
-    <div class="card card-body mb-4">
-        <p>{{ post.content|linebreaksbr }}</p>
-    </div>
-
-    <div class="d-flex justify-content-end mb-3">
-        <a href="{% url 'main:board_list' %}" class="action-link">목록으로</a>
+        <div class="post-content-body">
+            <p>{{ post.content|linebreaksbr }}</p>
+        </div>
+        <div class="post-actions">
+            <a href="{% url 'main:board_list' %}" class="action-btn primary">목록으로</a>
+        </div>
     </div>
 
-    <div class="d-flex justify-content-center mb-3">
+    <div class="like-section">
         <div>
             {% if user.is_authenticated %}
             <div class="d-flex flex-column align-items-center">
-                <img id="like-image" src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 60px; height: 60px; cursor: pointer;">
-                <span id="likes-count" class="likes-count mt-2">{{ post.likes.count }}</span>
+                <img id="like-image" src="{% static 'main/images/like_icon.png' %}" alt="Like" class="like-image">
+                <span id="likes-count" class="likes-count">{{ post.likes.count }}</span>
             </div>
             {% else %}
             <button class="btn btn-outline-danger" disabled>
-                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" style="width: 24px; height: 24px;"> <span id="likes-count">{{ post.likes.count }}</span>
+                <img src="{% static 'main/images/like_icon.png' %}" alt="Like" class="like-image"> <span id="likes-count">{{ post.likes.count }}</span>
             </button>
             {% endif %}
         </div>
     </div>
 
     <!-- Comments Section -->
-    <h3 class="mt-5 mb-3">댓글 ({{ post.comments.count }})</h3>
-    <div id="comments-list">
-        {% for comment in post.comments.all %}
-        <div class="card mb-2" id="comment-{{ comment.id }}">
-            <div class="card-body">
-                <h5 class="card-title mb-1">{{ comment.author_name }} <small class="text-muted ms-2">{{ comment.created_at|date:"Y.m.d H:i" }}</small></h5>
-                <p class="card-text">{{ comment.content|linebreaksbr }}</p>
-                <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="{{ comment.id }}">삭제</button>
+    <div class="comments-section">
+        <h3>댓글 ({{ post.comments.count }})</h3>
+        <div id="comments-list">
+            {% for comment in post.comments.all %}
+            <div class="comment-card {% if comment.is_deleted_by_admin %}deleted-by-admin{% endif %}" id="comment-{{ comment.id }}">
+                <div class="comment-card-body">
+                    <h5 class="comment-author">{% if comment.is_deleted_by_admin %}관리자{% else %}{{ comment.author_name }}{% endif %} <small class="comment-date">{{ comment.created_at|date:"Y.m.d H:i" }}</small></h5>
+                    <p class="comment-content">{% if comment.is_deleted_by_admin %}관리자에 의해 삭제된 메시지입니다.{% else %}{{ comment.content|linebreaksbr }}{% endif %}</p>
+                    {% if not comment.is_deleted_by_admin %}
+                    <button class="btn btn-sm comment-delete-btn" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'main:delete_comment' comment.id %}">삭제</button>
+                    {% endif %}
+                </div>
             </div>
+            {% empty %}
+            <p>아직 댓글이 없습니다.</p>
+            {% endfor %}
         </div>
-        {% empty %}
-        <p>아직 댓글이 없습니다.</p>
-        {% endfor %}
     </div>
 
-    <h4 class="mt-4 mb-3">댓글 작성</h4>
-    <form id="comment-form" class="mb-5">
-        {% csrf_token %}
+    <div class="comment-form-section">
+        <h4>댓글 작성</h4>
+        <form id="comment-form" class="comment-form mb-5">
+            {% csrf_token %}
 
-        <!-- 줄 1: 이름 + 비번 -->
-        <div class="d-flex align-items-center gap-3 mb-2">
-            <input type="text" class="form-control" name="author_name" placeholder="이름" required style="width: 150px;">
-            <input type="password" class="form-control" name="password" placeholder="비밀번호" required style="width: 150px;">
-        </div>
-
-        <!-- 줄 2: 내용 textarea + 버튼 -->
-        <div class="d-flex align-items-start gap-3">
-            <textarea class="form-control" name="content" placeholder="내용을 입력하세요" required rows="3" style="flex: 1;"></textarea>
-            <div class="d-flex flex-column gap-2">
-                <button type="submit" class="btn btn-primary">등록</button>
-                <button type="button" id="add-comment-and-like" class="btn btn-outline-primary">등록+추천</button>
+            <!-- 줄 1: 이름 + 비번 -->
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <input type="text" class="form-control" name="author_name" placeholder="이름" required style="width: 150px;">
+                <input type="password" class="form-control" name="password" placeholder="비밀번호" required style="width: 150px;">
             </div>
-        </div>
-    </form>
+
+            <!-- 줄 2: 내용 textarea + 버튼 -->
+            <div class="d-flex align-items-start gap-3">
+                <textarea class="form-control" name="content" placeholder="내용을 입력하세요" required rows="3" style="flex: 1;"></textarea>
+                <div class="d-flex flex-column gap-2">
+                    <button type="submit" class="btn btn-primary">등록</button>
+                    <button type="button" id="add-comment-and-like" class="btn btn-outline-primary">등록+추천</button>
+                </div>
+            </div>
+        </form>
+    </div>
 
 </div>
 
 {% if user.is_authenticated %}
 <script>
+    const IS_SUPERUSER = {{ is_superuser|yesno:"true,false" }};
     document.addEventListener('DOMContentLoaded', function() {
+        console.log('DOM Content Loaded');
         const likeImage = document.getElementById('like-image');
         const likesCountSpan = document.getElementById('likes-count');
 
@@ -124,10 +142,46 @@
 </script>
 {% endif %}
 
+{% if user.is_superuser %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const toggleAnnouncementBtn = document.getElementById('toggle-announcement-btn');
+        if (toggleAnnouncementBtn) {
+            toggleAnnouncementBtn.addEventListener('click', function() {
+                fetch('{% url "main:toggle_announcement" post.pk %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({})
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        if (data.is_announcement) {
+                            toggleAnnouncementBtn.textContent = '공지 해제';
+                            alert('게시글이 공지로 설정되었습니다.');
+                        } else {
+                            toggleAnnouncementBtn.textContent = '공지 설정';
+                            alert('게시글 공지가 해제되었습니다.');
+                        }
+                    } else if (data.error) {
+                        alert('공지 설정/해제 실패: ' + data.error);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        }
+    });
+</script>
+{% endif %}
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const commentForm = document.getElementById('comment-form');
         const commentsList = document.getElementById('comments-list');
+        console.log('commentsList:', commentsList);
 
         // Add Comment
         if (commentForm) {
@@ -161,11 +215,11 @@
             .then(result => {
                 if (result.success) {
                     const newCommentHtml = `
-                        <div class="card mb-2" id="comment-${result.comment_id}">
-                            <div class="card-body">
-                                <h5 class="card-title mb-1">${result.author_name} <small class="text-muted ms-2">${result.created_at}</small></h5>
-                                <p class="card-text">${result.content.replace(/\n/g, '<br>')}</p>
-                                <button class="btn btn-sm btn-outline-danger delete-comment-btn" data-comment-id="${result.comment_id}">삭제</button>
+                        <div class="comment-card" id="comment-${result.comment_id}">
+                            <div class="comment-card-body">
+                                <h5 class="comment-author">${result.author_name} <small class="comment-date">${result.created_at}</small></h5>
+                                <p class="comment-content">${result.content.replace(/\n/g, '<br>')}</p>
+                                <button class="btn btn-sm comment-delete-btn" data-comment-id="${result.comment_id}" data-delete-url="/api/comments/${result.comment_id}/delete/">삭제</button>
                             </div>
                         </div>
                     `;
@@ -200,7 +254,7 @@
                         likesCountSpan.classList.add('liked-bold');
                     } else {
                         likesCountSpan.classList.remove('liked-bold');
-                    n                    }
+                    }
                 } else if (data.error) {
                     alert(data.error);
                 }
@@ -211,31 +265,50 @@
         // Delete Comment (Event Delegation)
         if (commentsList) {
             commentsList.addEventListener('click', function(e) {
-                if (e.target.classList.contains('delete-comment-btn')) {
-                    const commentId = e.target.dataset.commentId;
-                    const password = prompt('댓글 비밀번호를 입력하세요:');
+                console.log('Click event on commentsList');
+                const deleteButton = e.target.closest('.comment-delete-btn');
+                if (deleteButton) {
+                    console.log('Delete button clicked:', deleteButton);
+                    if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+                        const commentId = deleteButton.dataset.commentId;
+                        let password = ''; // 비밀번호 변수 초기화
 
-                    if (password === null) { // User cancelled prompt
-                        return;
-                    }
-
-                    fetch(`/api/comments/${commentId}/delete/`, {
-                        method: 'POST',
-                        headers: {
-                            'X-CSRFToken': '{{ csrf_token }}', // Use a global CSRF token if available, or pass it from context
-                            'Content-Type': 'application/json'
-                        },
-                        body: JSON.stringify({ password: password })
-                    })
-                    .then(response => response.json())
-                    .then(result => {
-                        if (result.success) {
-                            document.getElementById(`comment-${commentId}`).remove();
-                        } else {
-                            alert('댓글 삭제 실패: ' + result.error);
+                        // superuser가 아닌 경우에만 비밀번호 프롬프트 표시
+                        if (!IS_SUPERUSER) {
+                            password = prompt('댓글 비밀번호를 입력하세요:');
+                            if (password === null) { // User cancelled prompt
+                                return;
+                            }
                         }
-                    })
-                    .catch(error => console.error('Error:', error));
+
+                        fetch(deleteButton.dataset.deleteUrl, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ password: password })
+                        })
+                        .then(response => response.json())
+                        .then(result => {
+                            if (result.success) {
+                                const commentElement = document.getElementById(`comment-${commentId}`);
+                                if (result.is_soft_deleted) {
+                                    // 소프트 삭제: 내용 변경 및 버튼 숨기기
+                                    commentElement.querySelector('.comment-content').innerHTML = result.new_content;
+                                    commentElement.querySelector('.comment-author').innerHTML = '관리자 <small class="comment-date">' + commentElement.querySelector('.comment-date').textContent + '</small>';
+                                    commentElement.querySelector('.comment-delete-btn').style.display = 'none';
+                                    commentElement.classList.add('deleted-by-admin');
+                                } else {
+                                    // 완전 삭제: 요소 제거
+                                    commentElement.remove();
+                                }
+                            } else {
+                                alert('댓글 삭제 실패: ' + result.error);
+                            }
+                        })
+                        .catch(error => console.error('Error:', error));
+                    }
                 }
             });
         }

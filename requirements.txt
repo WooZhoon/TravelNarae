@@ -13,3 +13,4 @@ requests
 discord.py
 mcp
 pydantic
+django-widget-tweaks

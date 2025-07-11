@@ -27,4 +27,5 @@ urlpatterns = [
     path('api/board/<int:pk>/like/', views.like_post, name='like_post'),
     path('api/board/<int:pk>/comments/add/', views.add_comment, name='add_comment'),
     path('api/comments/<int:pk>/delete/', views.delete_comment, name='delete_comment'),
+    path('api/board/<int:pk>/toggle_announcement/', views.toggle_announcement, name='toggle_announcement'),
 ]
