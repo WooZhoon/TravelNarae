@@ -53,16 +53,8 @@
     <div class="comments-section">
         <h3>댓글 ({{ post.comments.count }})</h3>
         <div id="comments-list">
-            {% for comment in post.comments.all %}
-            <div class="comment-card {% if comment.is_deleted_by_admin %}deleted-by-admin{% endif %}" id="comment-{{ comment.id }}">
-                <div class="comment-card-body">
-                    <h5 class="comment-author">{% if comment.is_deleted_by_admin %}관리자{% else %}{{ comment.author_name }}{% endif %} <small class="comment-date">{{ comment.created_at|date:"Y.m.d H:i" }}</small></h5>
-                    <p class="comment-content">{% if comment.is_deleted_by_admin %}관리자에 의해 삭제된 메시지입니다.{% else %}{{ comment.content|linebreaksbr }}{% endif %}</p>
-                    {% if not comment.is_deleted_by_admin %}
-                    <button class="btn btn-sm comment-delete-btn" data-comment-id="{{ comment.id }}" data-delete-url="{% url 'main:delete_comment' comment.id %}">삭제</button>
-                    {% endif %}
-                </div>
-            </div>
+            {% for comment in comments %}
+                {% include "main/_comment.html" with comment=comment depth=0 %}
             {% empty %}
             <p>아직 댓글이 없습니다.</p>
             {% endfor %}
@@ -188,21 +180,128 @@
         if (commentForm) {
             commentForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                addComment();
+                addComment(commentForm);
             });
 
             const addCommentAndLikeBtn = document.getElementById('add-comment-and-like');
             if (addCommentAndLikeBtn) {
                 addCommentAndLikeBtn.addEventListener('click', function() {
-                    addComment(true);
+                    addComment(commentForm, true);
                 });
             }
         }
 
-        function addComment(like = false) {
-            const formData = new FormData(commentForm);
+        function autoResizeTextarea(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // Initial resize for main comment form textarea
+        const mainCommentTextarea = commentForm.querySelector('textarea[name="content"]');
+        if (mainCommentTextarea) {
+            mainCommentTextarea.addEventListener('input', function() {
+                autoResizeTextarea(this);
+            });
+            autoResizeTextarea(mainCommentTextarea); // Initial resize
+        }
+
+        // Delegate reply button clicks
+        commentsList.addEventListener('click', function(e) {
+            const replyBtn = e.target.closest('.reply-btn');
+            if (replyBtn) {
+                const commentId = replyBtn.dataset.commentId;
+                const replyFormContainer = document.getElementById(`reply-form-${commentId}`);
+                if (replyFormContainer) {
+                    // Hide all other reply forms
+                    document.querySelectorAll('.reply-form-container').forEach(form => {
+                        if (form.id !== `reply-form-${commentId}`) {
+                            form.style.display = 'none';
+                        }
+                    });
+                    // Toggle current reply form
+                    const isHidden = replyFormContainer.style.display === 'none';
+                    replyFormContainer.style.display = isHidden ? 'block' : 'none';
+
+                    if (isHidden) {
+                        // If showing, find textarea and auto-resize
+                        const replyTextarea = replyFormContainer.querySelector('.reply-content-textarea');
+                        if (replyTextarea) {
+                            autoResizeTextarea(replyTextarea);
+                            replyTextarea.focus();
+                        }
+                    }
+                }
+            }
+
+            const deleteButton = e.target.closest('.comment-delete-btn');
+            if (deleteButton) {
+                console.log('Delete button clicked:', deleteButton);
+                if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
+                    const commentId = deleteButton.dataset.commentId;
+                    let password = ''; // 비밀번호 변수 초기화
+
+                    // superuser가 아닌 경우에만 비밀번호 프롬프트 표시
+                    if (!IS_SUPERUSER) {
+                        password = prompt('댓글 비밀번호를 입력하세요:');
+                        if (password === null) { // User cancelled prompt
+                            return;
+                        }
+                    }
+
+                    fetch(deleteButton.dataset.deleteUrl, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ password: password })
+                    })
+                    .then(response => response.json())
+                    .then(result => {
+                        if (result.success) {
+                            const commentElement = document.getElementById(`comment-${commentId}`);
+                            if (result.is_soft_deleted) {
+                                // 소프트 삭제: 내용 변경 및 버튼 숨기기
+                                commentElement.querySelector('.comment-content').innerHTML = result.new_content;
+                                commentElement.querySelector('.comment-author').innerHTML = '관리자 <small class="comment-date">' + commentElement.querySelector('.comment-date').textContent + '</small>';
+                                commentElement.querySelector('.comment-delete-btn').style.display = 'none';
+                                commentElement.classList.add('deleted-by-admin');
+                            } else {
+                                // 완전 삭제: 요소 제거
+                                commentElement.remove();
+                            }
+                        } else {
+                            alert('댓글 삭제 실패: ' + result.error);
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            }
+        });
+
+        // Delegate reply form submissions and textarea input events
+        commentsList.addEventListener('submit', function(e) {
+            if (e.target.classList.contains('reply-form')) {
+                e.preventDefault();
+                addComment(e.target);
+            }
+        });
+
+        commentsList.addEventListener('input', function(e) {
+            if (e.target.classList.contains('reply-content-textarea')) {
+                autoResizeTextarea(e.target);
+            }
+        });
+
+        function addComment(formElement, like = false) {
+            const formData = new FormData(formElement);
             const data = {};
             formData.forEach((value, key) => { data[key] = value; });
+
+            const parentId = formElement.dataset.parentId;
+            if (parentId) {
+                data['parent_id'] = parentId;
+            }
 
             fetch('{% url "main:add_comment" post.pk %}', {
                 method: 'POST',
@@ -215,17 +314,44 @@
             .then(response => response.json())
             .then(result => {
                 if (result.success) {
+                    let newMarginLeft = 0;
+                    if (parentId) {
+                        const parentCommentElement = document.getElementById(`comment-${parentId}`);
+                        if (parentCommentElement) {
+                            const parentMarginLeft = parseInt(parentCommentElement.style.marginLeft) || 0;
+                            newMarginLeft = parentMarginLeft + 20;
+                        }
+                    }
+
+                    // 새 댓글 HTML 생성 및 삽입
                     const newCommentHtml = `
-                        <div class="comment-card" id="comment-${result.comment_id}">
+                        <div class="${parentId ? 'nested-comment-card' : 'comment-card'} ${result.is_deleted_by_admin ? 'deleted-by-admin' : ''}" id="comment-${result.comment_id}" style="margin-left: ${newMarginLeft}px;">
                             <div class="comment-card-body">
-                                <h5 class="comment-author">${result.author_name} <small class="comment-date">${result.created_at}</small></h5>
-                                <p class="comment-content">${result.content.replace(/\n/g, '<br>')}</p>
-                                <button class="btn btn-sm comment-delete-btn" data-comment-id="${result.comment_id}" data-delete-url="/api/comments/${result.comment_id}/delete/">삭제</button>
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <p class="comment-content mb-0">${result.content.replace(/\n/g, '<br>')}<span class="comment-meta-inline"> - ${result.author_name} ${result.created_at}</span></p>
+                                    <div class="comment-actions d-flex gap-2 flex-shrink-0">
+                                        ${parentId ? '' : `<button class="btn btn-sm btn-secondary reply-btn" data-comment-id="${result.comment_id}">답글</button>`}
+                                        <button class="btn btn-sm comment-delete-btn" data-comment-id="${result.comment_id}" data-delete-url="/api/comments/${result.comment_id}/delete/">삭제</button>
+                                    </div>
+                                </div>
                             </div>
+                            <div class="reply-form-container" id="reply-form-${result.comment_id}" style="display: none;"></div>
                         </div>
                     `;
-                    commentsList.insertAdjacentHTML('beforeend', newCommentHtml);
-                    commentForm.reset(); // Clear form
+
+                    if (parentId) {
+                        const parentCommentElement = document.getElementById(`comment-${parentId}`);
+                        if (parentCommentElement) {
+                            parentCommentElement.insertAdjacentHTML('beforeend', newCommentHtml);
+                        }
+                    } else {
+                        commentsList.insertAdjacentHTML('beforeend', newCommentHtml);
+                    }
+
+                    formElement.reset();
+                    if (formElement.classList.contains('reply-form')) {
+                        formElement.closest('.reply-form-container').style.display = 'none';
+                    }
 
                     if (like) {
                         likePost(true);
@@ -261,57 +387,6 @@
                 }
             })
             .catch(error => console.error('Error:', error));
-        }
-
-        // Delete Comment (Event Delegation)
-        if (commentsList) {
-            commentsList.addEventListener('click', function(e) {
-                console.log('Click event on commentsList');
-                const deleteButton = e.target.closest('.comment-delete-btn');
-                if (deleteButton) {
-                    console.log('Delete button clicked:', deleteButton);
-                    if (confirm('정말로 이 댓글을 삭제하시겠습니까?')) {
-                        const commentId = deleteButton.dataset.commentId;
-                        let password = ''; // 비밀번호 변수 초기화
-
-                        // superuser가 아닌 경우에만 비밀번호 프롬프트 표시
-                        if (!IS_SUPERUSER) {
-                            password = prompt('댓글 비밀번호를 입력하세요:');
-                            if (password === null) { // User cancelled prompt
-                                return;
-                            }
-                        }
-
-                        fetch(deleteButton.dataset.deleteUrl, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRFToken': '{{ csrf_token }}',
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({ password: password })
-                        })
-                        .then(response => response.json())
-                        .then(result => {
-                            if (result.success) {
-                                const commentElement = document.getElementById(`comment-${commentId}`);
-                                if (result.is_soft_deleted) {
-                                    // 소프트 삭제: 내용 변경 및 버튼 숨기기
-                                    commentElement.querySelector('.comment-content').innerHTML = result.new_content;
-                                    commentElement.querySelector('.comment-author').innerHTML = '관리자 <small class="comment-date">' + commentElement.querySelector('.comment-date').textContent + '</small>';
-                                    commentElement.querySelector('.comment-delete-btn').style.display = 'none';
-                                    commentElement.classList.add('deleted-by-admin');
-                                } else {
-                                    // 완전 삭제: 요소 제거
-                                    commentElement.remove();
-                                }
-                            } else {
-                                alert('댓글 삭제 실패: ' + result.error);
-                            }
-                        })
-                        .catch(error => console.error('Error:', error));
-                    }
-                }
-            });
         }
     });
 </script>

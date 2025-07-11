@@ -35,6 +35,7 @@ class Post(models.Model):
 
 class Comment(models.Model):
     post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name='comments')
+    parent = models.ForeignKey('self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies') # 대댓글을 위한 부모 댓글 필드
     author_name = models.CharField(max_length=50)
     password = models.CharField(max_length=128) # 비밀번호 해싱을 위해 128자로 설정
     content = models.TextField()
@@ -45,4 +46,4 @@ class Comment(models.Model):
         return f'Comment by {self.author_name} on {self.post.title}'
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['created_at'] # 대댓글은 템플릿에서 계층적으로 정렬

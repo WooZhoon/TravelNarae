@@ -222,6 +222,7 @@ def map_view(request):
 # ===================================================
 
 from django.db.models import Count # Count 임포트 추가
+from .forms import CommentForm # CommentForm 임포트 추가
 
 class PostListView(ListView):
     model = Post
@@ -257,6 +258,9 @@ class PostDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_superuser'] = self.request.user.is_superuser
+        # 최상위 댓글만 가져오고, 템플릿에서 재귀적으로 대댓글을 렌더링
+        context['comments'] = self.object.comments.filter(parent__isnull=True).order_by('created_at')
+        context['comment_form'] = CommentForm()
         return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
@@ -321,14 +325,25 @@ def add_comment(request, pk):
         author_name = data.get('author_name')
         password = data.get('password')
         content = data.get('content')
+        parent_id = data.get('parent_id') # parent_id 추가
 
         if not all([author_name, password, content]):
             return JsonResponse({'error': '모든 필드를 입력해주세요.'}, status=400)
 
         hashed_password = make_password(password)
+        parent_comment = None
+        if parent_id:
+            try:
+                parent_comment = Comment.objects.get(pk=parent_id)
+                # 대댓글에 대댓글을 달 수 없도록 제한
+                if parent_comment.parent: # 이미 부모가 있는 댓글이라면
+                    return JsonResponse({'error': '대댓글에는 다시 대댓글을 달 수 없습니다.'}, status=400)
+            except Comment.DoesNotExist:
+                return JsonResponse({'error': '부모 댓글을 찾을 수 없습니다.'}, status=404)
 
         comment = Comment.objects.create(
             post=post,
+            parent=parent_comment, # parent 필드 추가
             author_name=author_name,
             password=hashed_password,
             content=content
@@ -338,7 +353,8 @@ def add_comment(request, pk):
             'author_name': comment.author_name,
             'content': comment.content,
             'created_at': comment.created_at.strftime("%Y.%m.%d %H:%M"),
-            'comment_id': comment.id
+            'comment_id': comment.id,
+            'parent_id': comment.parent_id # parent_id 반환
         })
     return JsonResponse({'error': 'Invalid request', 'status': 400})
 
