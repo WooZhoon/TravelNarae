@@ -215,10 +215,8 @@ body {
 .nested-comment-card {
     background-color: #f8f8f8; /* 아주 연한 회색 배경 */
     border-left: 4px solid #007bff; /* 왼쪽 테두리 추가 */
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
     margin-bottom: 0.75rem; /* 대댓글 아래 간격 추가 */
-    margin-right: 1rem; /* 오른쪽 여백 추가 */
-    padding-left: 1.5rem; /* 들여쓰기 조정 */
 }
 
 .nested-comment-card .comment-card-body {

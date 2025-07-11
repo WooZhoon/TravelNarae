@@ -5,7 +5,7 @@
 {% endif %}
     <div class="comment-card-body">
         <div class="d-flex justify-content-between align-items-start">
-            <p class="comment-content mb-0">{% if comment.is_deleted_by_admin %}관리자에 의해 삭제된 메시지입니다.{% else %}{{ comment.content|linebreaksbr }}{% endif %}
+            <p class="comment-content mb-0">{% if comment.is_deleted_by_admin %}관리자에 의해 삭제된 글입니다.{% else %}{{ comment.content|linebreaksbr }}{% endif %}
                 <span class="comment-meta-inline"> - {% if comment.is_deleted_by_admin %}관리자{% else %}{{ comment.author_name }}{% endif %} {{ comment.created_at|date:"Y.m.d H:i" }}</span>
             </p>
             {% if not comment.is_deleted_by_admin %}
@@ -18,6 +18,9 @@
             {% endif %}
         </div>
     </div>
+    {% for reply in comment.replies.all %}
+        {% include "main/_comment.html" with comment=reply depth=depth|add:20 %}
+    {% endfor %}
     <div class="reply-form-container" id="reply-form-{{ comment.id }}" style="display: none;">
         <form class="comment-form reply-form" data-parent-id="{{ comment.id }}">
             {% csrf_token %}
@@ -33,7 +36,4 @@
             </div>
         </form>
     </div>
-    {% for reply in comment.replies.all %}
-        {% include "main/_comment.html" with comment=reply depth=depth|add:20 %}
-    {% endfor %}
 </div>
