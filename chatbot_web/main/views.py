@@ -211,6 +211,19 @@ def delete_chat_session(request, session_id):
     
 
 
+from requests.adapters import HTTPAdapter
+from urllib3.util.ssl_ import create_urllib3_context
+import certifi
+
+# 🔐 OpenSSL 보안 우회용 어댑터 정의
+class TLSAdapter(HTTPAdapter):
+    def init_poolmanager(self, *args, **kwargs):
+        context = create_urllib3_context()
+        context.set_ciphers('DEFAULT@SECLEVEL=1')  # 낮은 보안 수준 허용
+        kwargs['ssl_context'] = context
+        return super().init_poolmanager(*args, **kwargs)
+
+# 💥 적용된 함수
 def recommendation(request):
     tour_api_key = os.getenv("TOUR_API_KEY")
     recommended_items = []
@@ -218,33 +231,32 @@ def recommendation(request):
     if request.method == 'POST':
         area_code = request.POST.get('region')
         sigungu_code = request.POST.get('sub-region')
-        # travel_dates = request.POST.get('travel-dates') # 현재는 사용하지 않음
-        # adults = request.POST.get('adults') # 현재는 사용하지 않음
-        # children = request.POST.get('children') # 현재는 사용하지 않음
 
-        # 한국관광공사 API 호출 (지역 기반 관광 정보 조회)
         url = "https://apis.data.go.kr/B551011/KorService2/areaBasedList2"
         params = {
-            'serviceKey': quote_plus(tour_api_key),
+            'serviceKey': tour_api_key,
             'MobileOS': 'ETC',
             'MobileApp': 'MyApp',
             '_type': 'json',
-            'numOfRows': 10,  # 일단 10개만 가져오도록 설정
+            'numOfRows': 10,
             'pageNo': 1,
             'areaCode': area_code,
             'sigunguCode': sigungu_code,
-            'contentTypeId': 12, # 관광지 (임시)
+            'contentTypeId': 12,
         }
 
         try:
-            response = requests.get(url, params=params)
-            response.raise_for_status()  # HTTP 오류 발생 시 예외 발생
+            # 세션에 어댑터 장착
+            session = requests.Session()
+            session.mount("https://", TLSAdapter())
+
+            response = session.get(url, params=params,verify=certifi.where())
+            response.raise_for_status()
             data = response.json()
-            
-            # API 응답 구조에 따라 데이터 파싱
+
             if data and data['response']['body']['items']:
                 items = data['response']['body']['items']['item']
-                if isinstance(items, dict): # 단일 항목일 경우 리스트로 변환
+                if isinstance(items, dict):
                     recommended_items.append(items)
                 else:
                     recommended_items = items
@@ -260,6 +272,7 @@ def recommendation(request):
         'TOUR_API_KEY': tour_api_key,
         'recommended_items': recommended_items,
     })
+
 
 def map_view(request):
     return render(request, 'main/heritage_map.html')  # 아직 구현 안 됐음

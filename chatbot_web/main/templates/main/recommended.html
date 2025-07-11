@@ -35,7 +35,7 @@
       <!-- 📅 여행 날짜 선택 -->
       <div class="mb-3">
         <label for="travel-dates" class="form-label">여행 기간</label>
-        <input type="text" id="travel-dates" class="form-control" placeholder="시작일 ~ 종료일 선택" name="travel-dates">
+        <input type="text" id="travel-dates" name="travel_dates" class="form-control" placeholder="시작일 ~ 종료일 선택" name="travel-dates">
       </div>
 
       <!-- 📍 지역 선택 -->
@@ -43,12 +43,12 @@
         <label class="form-label">여행 지역</label>
         <div class="row g-2">
           <div class="col-md-6">
-            <select id="region" class="form-select">
+            <select id="region" name="region" class="form-select">
               <option value="">-- 시/도 선택 --</option>
             </select>
           </div>
           <div class="col-md-6">
-            <select id="sub-region" class="form-select" disabled>
+            <select id="sub-region" name="sub_region" class="form-select" disabled>
               <option value="">-- 세부 지역 선택 --</option>
             </select>
           </div>
@@ -59,11 +59,11 @@
       <div class="mb-3 row">
         <div class="col-md-6">
           <label for="adults" class="form-label">성인 수</label>
-          <input type="number" id="adults" class="form-control" min="1" value="1">
+          <input type="number" id="adults" name="adults" class="form-control" min="1" value="1">
         </div>
         <div class="col-md-6">
           <label for="children" class="form-label">어린이 수</label>
-          <input type="number" id="children" class="form-control" min="0" value="0">
+          <input type="number" id="children" name="children" class="form-control" min="0" value="0">
         </div>
       </div>
 
@@ -106,7 +106,7 @@
 
   <!-- ✅ 기능 스크립트 -->
   <script>
-    const TOUR_API_KEY = "{{ TOUR_API_KEY|urlencode }}";
+    const TOUR_API_KEY = "{{ TOUR_API_KEY|escapejs}}";
     const regionSelect = document.getElementById("region");
     const subRegionSelect = document.getElementById("sub-region");
 
