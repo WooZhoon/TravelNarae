@@ -228,20 +228,36 @@ class PostListView(ListView):
     template_name = 'main/board_list.html'  # 게시글 목록을 보여줄 템플릿
     context_object_name = 'posts'  # 템플릿에서 사용할 변수 이름
     paginate_by = 10  # 한 페이지에 10개의 게시글
-    ordering = ['-created_at']  # 최신순 정렬 추가
+    # ordering = ['-created_at']  # 최신순 정렬 추가
 
     def get_queryset(self):
-        queryset = super().get_queryset()
-        queryset = queryset.annotate(
+        # 일반 게시글 (is_announcement=False)은 created_at 역순으로 정렬
+        normal_posts = super().get_queryset().filter(is_announcement=False).annotate(
             likes_count=Count('likes', distinct=True),
             comment_count=Count('comments', distinct=True)
-        )
-        return queryset
+        ).order_by('-created_at')
+
+        # 페이지네이션을 위해 일반 게시글만 사용
+        return normal_posts
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        # 공지 게시글을 별도로 컨텍스트에 추가
+        context['announcements'] = Post.objects.filter(is_announcement=True).annotate(
+            likes_count=Count('likes', distinct=True),
+            comment_count=Count('comments', distinct=True)
+        ).order_by('-created_at')
+        return context
 
 class PostDetailView(DetailView):
     model = Post
     template_name = 'main/board_detail.html'  # 게시글 상세를 보여줄 템플릿
     context_object_name = 'post'  # 템플릿에서 사용할 변수 이름
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_superuser'] = self.request.user.is_superuser
+        return context
 
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
@@ -261,7 +277,7 @@ class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         post = self.get_object()
-        return self.request.user == post.author  # 작성자만 수정 가능
+        return self.request.user == post.author or self.request.user.is_superuser  # 작성자이거나 superuser인 경우 수정 가능
 
 class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     model = Post
@@ -270,7 +286,7 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
 
     def test_func(self):
         post = self.get_object()
-        return self.request.user == post.author  # 작성자만 삭제 가능
+        return self.request.user == post.author or self.request.user.is_superuser # 작성자이거나 superuser인 경우 삭제 가능
 
 @login_required
 @csrf_exempt
@@ -333,12 +349,33 @@ def delete_comment(request, pk):
         data = json.loads(request.body)
         password = data.get('password')
 
+        # superuser인 경우 비밀번호 확인 없이 바로 삭제 (소프트 삭제)
+        if request.user.is_superuser:
+            comment.content = "관리자에 의해 삭제된 메시지입니다."
+            comment.is_deleted_by_admin = True
+            comment.save()
+            return JsonResponse({'success': True, 'is_soft_deleted': True, 'new_content': comment.content})
+
+        # 일반 사용자인 경우 비밀번호 확인 후 완전 삭제
         if not password:
             return JsonResponse({'error': '비밀번호를 입력해주세요.'}, status=400)
 
         if check_password(password, comment.password):
             comment.delete()
-            return JsonResponse({'success': True})
+            return JsonResponse({'success': True, 'is_soft_deleted': False})
         else:
             return JsonResponse({'error': '비밀번호가 일치하지 않습니다.'}, status=403)
     return JsonResponse({'error': 'Invalid request', 'status': 400})
+
+@login_required
+@csrf_exempt
+def toggle_announcement(request, pk):
+    if not request.user.is_superuser:
+        return JsonResponse({'error': '권한이 없습니다.'}, status=403)
+
+    if request.method == 'POST':
+        post = get_object_or_404(Post, pk=pk)
+        post.is_announcement = not post.is_announcement
+        post.save()
+        return JsonResponse({'success': True, 'is_announcement': post.is_announcement})
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
