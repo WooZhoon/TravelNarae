@@ -1,16 +1,6 @@
-/* chatbot_web/main/static/main/board_detail.css */
+/* board_detail.css */
 
-body {
-    background: linear-gradient(to right, #f0f2f5, #e0e5ec); /* 일관된 배경 */
-    font-family: 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
-    color: #343a40;
-}
-
-.container.mt-5 {
-    padding-top: 2.5rem;
-    padding-bottom: 2.5rem;
-}
-
+/* 게시글 상세 카드 */
 .post-detail-card {
     background-color: #ffffff;
     border-radius: 1rem;
@@ -20,6 +10,7 @@ body {
     border: 1px solid #e9ecef;
 }
 
+/* 게시글 상세 헤더 */
 .post-detail-header {
     padding: 1.5rem 2rem;
     border-bottom: 1px solid #e9ecef;
@@ -32,11 +23,13 @@ body {
     margin-bottom: 0.5rem;
 }
 
+/* 게시글 메타 정보 */
 .post-meta-info {
     font-size: 0.9rem;
     color: #6c757d;
 }
 
+/* 게시글 내용 본문 */
 .post-content-body {
     padding: 2rem;
     line-height: 1.8;
@@ -44,6 +37,7 @@ body {
     color: #495057;
 }
 
+/* 게시글 액션 버튼 그룹 */
 .post-actions {
     padding: 1rem 2rem;
     border-top: 1px solid #e9ecef;
@@ -52,6 +46,7 @@ body {
     gap: 0.75rem;
 }
 
+/* 액션 버튼 공통 스타일 */
 .action-btn {
     background-color: #6c757d;
     border: none;
@@ -90,7 +85,7 @@ body {
     transform: translateY(-2px);
 }
 
-/* Like Section */
+/* 좋아요 섹션 */
 .like-section {
     text-align: center;
     margin-top: 2rem;
@@ -108,6 +103,7 @@ body {
     transform: scale(1.1); /* 호버 시 확대 */
 }
 
+/* 좋아요 팝 효과 */
 .like-pop-effect {
     animation: pop 0.3s ease-out;
 }
@@ -118,6 +114,7 @@ body {
     100% { transform: scale(1); }
 }
 
+/* 좋아요 수 표시 */
 .likes-count {
     font-size: 1.2rem;
     font-weight: 500;
@@ -131,10 +128,10 @@ body {
     color: #dc3545; /* 좋아요 누른 상태 색상 */
 }
 
+/* 로그인하지 않은 사용자 좋아요 섹션 */
 .not-logged-in-like-section {
     opacity: 0.5; /* 흐리게 */
     pointer-events: none; /* 클릭 불가능하게 */
-    /* 추가적인 스타일 조정 */
     border: none; /* 테두리 제거 */
     background: none; /* 배경 제거 */
     padding: 0; /* 패딩 제거 */
@@ -150,7 +147,7 @@ body {
     color: #6c757d; /* 글자색 조정 */
 }
 
-/* Comments Section */
+/* 댓글 섹션 */
 .comments-section h3 {
     font-size: 1.8rem;
     font-weight: 600;
@@ -158,6 +155,7 @@ body {
     margin-bottom: 1.5rem;
 }
 
+/* 댓글 카드 */
 .comment-card {
     background-color: #f8f9fa;
     border-radius: 0.75rem;
@@ -172,20 +170,21 @@ body {
     padding: 1rem 1.2rem;
 }
 
-
-
+/* 댓글 내용 */
 .comment-content {
     font-size: 0.95rem;
     line-height: 1.6;
     color: #495057;
 }
 
+/* 댓글 메타 정보 (작성자, 날짜) */
 .comment-meta-inline {
     font-size: 0.85rem;
     color: #6c757d;
     white-space: nowrap; /* 줄바꿈 방지 */
 }
 
+/* 댓글 삭제 버튼 */
 .comment-delete-btn {
     background-color: #dc3545;
     border: none;
@@ -200,12 +199,14 @@ body {
     background-color: #c82333;
 }
 
+/* 답글 버튼 */
 .reply-btn {
     border-radius: 0.4rem;
     padding: 0.3rem 0.6rem;
     font-size: 0.8rem;
 }
 
+/* 관리자에 의해 삭제된 댓글 */
 .comment-card.deleted-by-admin {
     background-color: #f0f0f0; /* 회색 배경 */
     border-color: #e0e0e0;
@@ -218,6 +219,7 @@ body {
     font-style: italic; /* 기울임꼴 */
 }
 
+/* 중첩된 댓글 (대댓글) */
 .nested-comment-card {
     background-color: #f8f8f8; /* 아주 연한 회색 배경 */
     border-left: 4px solid #007bff; /* 왼쪽 테두리 추가 */
@@ -229,7 +231,7 @@ body {
     padding: 0.5rem 1.2rem; /* 상하 패딩을 줄여 높이 감소 */
 }
 
-/* Comment Form */
+/* 댓글 폼 */
 .comment-form-section h4 {
     font-size: 1.5rem;
     font-weight: 600;
@@ -271,6 +273,7 @@ body {
     color: white;
 }
 
+/* 답글 폼 */
 .reply-form {
     padding: 0.5rem 1rem; /* 좌우 여백 추가 */
 }

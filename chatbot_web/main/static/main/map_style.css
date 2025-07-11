@@ -1,10 +1,6 @@
-body {
-  font-family: 'Noto Sans KR', sans-serif;
-  margin: 0;
-  padding: 20px;
-  background-color: #f4f4f4;
-}
+/* map_style.css */
 
+/* 페이지 제목 */
 .title {
   text-align: center;
   font-size: 32px;
@@ -21,7 +17,7 @@ body {
   margin-bottom: 30px;
 }
 
-/* 지도 안의 한국 지도 */
+/* 지도 안의 한국 지도 SVG */
 #korea-map {
   max-height: 100vh;
   overflow: auto;
@@ -29,7 +25,7 @@ body {
   text-align: center;
 }
 
-/* 각 지역 기본 스타일 */
+/* 각 지역 (land) 기본 스타일 */
 .land {
   fill: #CCCCCC !important;
   stroke: white !important;
@@ -40,28 +36,31 @@ body {
   cursor: pointer;
 }
 
-
+/* 포커스된 지역 스타일 */
 .land.focused {
   transform: scale(2.5) !important;
   fill: #FF6600 !important;
 }
 
+/* 포커스되지 않은 지역 호버 스타일 */
 .land:not(.focused):hover {
   transform: scale(1.1);
   fill: #a0a0a0 !important;
 }
 
+/* 작은 지역 포커스 스타일 */
 .land.small-region.focused {
   transform: scale(12) !important;
   fill: #FF6600 !important;
 }
 
+/* 작은 지역 호버 스타일 */
 .land.small-region:not(.focused):hover {
   transform: scale(1.5);
   fill: #a0a0a0 !important;
 }
 
-/* 흐리게 처리할 경우 (사용 안 하고 있다면 생략 가능) */
+/* 흐리게 처리 (현재 사용 안 함) */
 .dimmed {
   opacity: 0.2;
 }
@@ -84,6 +83,7 @@ body {
   color: #2c3e50;
 }
 
+/* 세부 지역 목록 */
 #sub-regions p {
   font-size: 16px;
   margin: 8px 0;
