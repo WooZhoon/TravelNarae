@@ -115,7 +115,7 @@ body > main {
 /* 메인 채팅 영역: 중앙 배치 */
 .chat-main {
   flex: 1;
-  background-color: transparent;
+  background-color: #fff;
   position: relative;
   display: flex;
   flex-direction: column;
