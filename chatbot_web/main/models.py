@@ -26,6 +26,7 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_announcement = models.BooleanField(default=False) # 공지 여부 필드 추가
+    is_anonymous = models.BooleanField(default=False) # 익명 여부 필드 추가
 
     def __str__(self):
         return self.title

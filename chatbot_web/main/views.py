@@ -483,7 +483,7 @@ class PostDetailView(DetailView):
 class PostCreateView(LoginRequiredMixin, CreateView):
     model = Post
     template_name = 'main/board_form.html'  # 게시글 작성 폼 템플릿
-    fields = ['title', 'content']  # 사용자가 입력할 필드
+    fields = ['title', 'content', 'is_anonymous']  # 사용자가 입력할 필드
     success_url = reverse_lazy('main:board_list')  # 작성 성공 시 이동할 URL
 
     def form_valid(self, form):
@@ -493,7 +493,7 @@ class PostCreateView(LoginRequiredMixin, CreateView):
 class PostUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Post
     template_name = 'main/board_form.html'  # 게시글 수정 폼 템플릿
-    fields = ['title', 'content']  # 사용자가 수정할 필드
+    fields = ['title', 'content', 'is_anonymous']  # 사용자가 수정할 필드
     success_url = reverse_lazy('main:board_list')  # 수정 성공 시 이동할 URL
 
     def test_func(self):
