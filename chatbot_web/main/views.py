@@ -204,8 +204,8 @@ def chat_bot_view(request, session_id=None):
 def summarize_message(user_message):
     # LLM을 사용하여 메시지를 한 줄로 요약
     try:
-        llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
-        prompt = f"다음 사용자 메시지를 기반으로, 채팅방의 제목으로 쓸 짧은 요약을 5단어 이내로 생성해줘. 반말은 사용하지 마. 예를 들어, '경복궁 가는 길 알려줘'는 '경복궁 가는 길'로 요약해줘.\n\n사용자 메시지: {user_message}\n\n요약:"
+        llm = ChatOpenAI(model_name="gpt-4o", temperature=0)
+        prompt = f"다음 사용자 메시지를 기반으로, 채팅방의 제목으로 쓸 짧은 요약을 12글자 이내로 생성해줘. 반말은 사용하지 마. 예를 들어, '경복궁 가는 길 알려줘'는 '경복궁 가는 길'로 요약해줘.\n\n사용자 메시지: {user_message}\n\n요약:"
         summary = llm.invoke(prompt).content.strip()
         return summary
     except Exception as e:
@@ -279,6 +279,23 @@ def chat_api(request):
         return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
+
+@login_required
+def search_chat_sessions(request):
+    query = request.GET.get('query', '')
+    if not query:
+        # 검색어가 없으면 모든 세션을 반환 (또는 빈 목록을 반환할 수도 있음)
+        sessions = ChatSession.objects.filter(user=request.user).values_list('id', flat=True)
+        return JsonResponse({'session_ids': list(sessions)})
+
+    # 메시지 내용에 검색어가 포함된 세션을 찾음
+    matching_sessions = ChatSession.objects.filter(
+        user=request.user,
+        messages__content__icontains=query
+    ).distinct().values_list('id', flat=True)
+
+    return JsonResponse({'session_ids': list(matching_sessions)})
+
 
 @csrf_exempt
 @login_required

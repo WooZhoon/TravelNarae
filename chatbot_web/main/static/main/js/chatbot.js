@@ -1,4 +1,37 @@
 document.addEventListener('DOMContentLoaded', function() {
+    const chatSearchForm = document.getElementById('chatSearchForm');
+    const chatSearchInput = document.getElementById('chatSearchInput');
+    const toggleSearchDiv = document.getElementById('toggleSearch');
+
+    if (toggleSearchDiv) {
+        toggleSearchDiv.addEventListener('click', () => {
+            chatSearchForm.classList.toggle('visible');
+        });
+    }
+
+    chatSearchForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const query = chatSearchInput.value.trim();
+
+        try {
+            const response = await fetch(`/api/chat/search/?query=${encodeURIComponent(query)}`);
+            const data = await response.json();
+            const sessionIds = data.session_ids;
+
+            const allSessionItems = document.querySelectorAll('.chat-session-item');
+            allSessionItems.forEach(item => {
+                const sessionId = item.dataset.sessionId;
+                if (sessionIds.includes(parseInt(sessionId, 10))) {
+                    item.style.display = ''; // 보이게
+                } else {
+                    item.style.display = 'none'; // 숨김
+                }
+            });
+        } catch (error) {
+            console.error('Error searching chats:', error);
+        }
+    });
+
     const sidebarToggle = document.getElementById('sidebarToggle');
     const chatSidebar = document.querySelector('.chat-sidebar');
     const chatWrapper = document.querySelector('.chat-wrapper');

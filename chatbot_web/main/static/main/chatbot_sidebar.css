@@ -5,7 +5,7 @@
   position: fixed;
   left: 0;
   top: 60px; /* 헤더 높이만큼 아래로 */
-  width: 240px;
+  width: 240px; /* 폭을 원래대로 240px로 되돌림 */
   height: calc(100vh - 60px);
   background-color: #f7f7f7;
   border-right: 1px solid #ddd;
@@ -62,7 +62,7 @@
   padding: 2.5px;
   position: fixed; /* 고정 위치 */
   top: 70px; /* 헤더 아래 */
-  left: 250px; /* 사이드바 너비 + 여백 */
+  left: 250px; /* 사이드바 너비 + 여백 (240px + 10px) */
   z-index: 150; /* 사이드바보다 위에 */
   transition: left 0.3s ease; /* 부드러운 전환 */
 }

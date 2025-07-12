@@ -16,6 +16,7 @@ urlpatterns = [
     path('profile/edit/', views.profile_edit_view, name='profile_edit'),
     path('signup/', views.signup, name='signup'),
     path('chatbot/<int:session_id>/', views.chat_bot_view, name='chat_bot'),
+    path('api/chat/search/', views.search_chat_sessions, name='search_chat_sessions'),
     path('api/chat/update_title/<int:session_id>/', views.update_chat_title, name='update_chat_title'),
     path('api/chat/session/<int:session_id>/delete/', views.delete_chat_session, name='delete_chat_session'),
     path('recommendation/', views.recommendation, name='recommendation'),
