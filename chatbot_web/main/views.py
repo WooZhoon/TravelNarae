@@ -1,5 +1,6 @@
 # 🔧 기본 Django 라이브러리
 from django.shortcuts import render, redirect, get_object_or_404
+from django.http import Http404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
@@ -472,6 +473,14 @@ class PostDetailView(DetailView):
     template_name = 'main/board_detail.html'  # 게시글 상세를 보여줄 템플릿
     context_object_name = 'post'  # 템플릿에서 사용할 변수 이름
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except Http404:
+            messages.error(request, "요청하신 게시글을 찾을 수 없거나 삭제되었습니다.")
+            return redirect('main:board_list')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['is_superuser'] = self.request.user.is_superuser
@@ -508,6 +517,12 @@ class PostDeleteView(LoginRequiredMixin, UserPassesTestMixin, DeleteView):
     def test_func(self):
         post = self.get_object()
         return self.request.user == post.author or self.request.user.is_superuser # 작성자이거나 superuser인 경우 삭제 가능
+
+    def delete(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # 게시글과 관련된 모든 알림 삭제
+        Notification.objects.filter(link=reverse_lazy('main:board_detail', kwargs={'pk': self.object.pk})).delete()
+        return super().delete(request, *args, **kwargs)
 
 @login_required
 @csrf_exempt
