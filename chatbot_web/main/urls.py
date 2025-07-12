@@ -19,6 +19,8 @@ urlpatterns = [
     path('api/chat/search/', views.search_chat_sessions, name='search_chat_sessions'),
     path('api/chat/update_title/<int:session_id>/', views.update_chat_title, name='update_chat_title'),
     path('api/chat/session/<int:session_id>/delete/', views.delete_chat_session, name='delete_chat_session'),
+    path('api/notifications/', views.get_notifications, name='get_notifications'),
+    path('api/notifications/<int:notification_id>/read/', views.mark_notification_as_read, name='mark_notification_as_read'),
     path('recommendation/', views.recommendation, name='recommendation'),
     path('map/', views.map_view, name='map'),
 

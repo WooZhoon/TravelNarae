@@ -20,7 +20,7 @@ import requests
 from urllib.parse import quote_plus
 
 # 🔧 로컬 모델
-from .models import ChatSession, ChatMessage, Post, Comment # Comment 모델 임포트
+from .models import ChatSession, ChatMessage, Post, Comment, Notification # Comment 모델 임포트
 
 # 🔧 시스템 경로 등록
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
@@ -331,7 +331,37 @@ def delete_chat_session(request, session_id):
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
     return JsonResponse({'status': 'error', 'message': 'DELETE method required'}, status=405)
-    
+
+
+@login_required
+def get_notifications(request):
+    notifications = Notification.objects.filter(user=request.user, is_read=False).order_by('-created_at')
+    notification_list = []
+    for notif in notifications:
+        notification_list.append({
+            'id': notif.id,
+            'message': notif.message,
+            'link': notif.link,
+            'created_at': notif.created_at.strftime("%Y-%m-%d %H:%M"),
+            'is_read': notif.is_read
+        })
+    return JsonResponse({'notifications': notification_list})
+
+
+@csrf_exempt
+@login_required
+def mark_notification_as_read(request, notification_id):
+    if request.method == 'POST':
+        try:
+            notification = get_object_or_404(Notification, id=notification_id, user=request.user)
+            notification.is_read = True
+            notification.save()
+            return JsonResponse({'status': 'success'})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'POST method required'}, status=405)
+
+
 # ===================================================
 # 여행코스 추천 + 호버링 기능 구현 map
 # ===================================================
@@ -538,6 +568,14 @@ def add_comment(request, pk):
             password=hashed_password,
             content=content
         )
+
+        # 게시글 작성자에게 댓글 알림 생성
+        if post.author != request.user: # 자신의 게시글에 댓글을 달면 알림을 보내지 않음
+            Notification.objects.create(
+                user=post.author,
+                message=f'{author_name}님이 회원님의 게시글 "{post.title}"에 댓글을 남겼습니다.',
+                link=reverse_lazy('main:board_detail', kwargs={'pk': post.pk})
+            )
         return JsonResponse({
             'success': True,
             'author_name': comment.author_name,
@@ -583,5 +621,17 @@ def toggle_announcement(request, pk):
         post = get_object_or_404(Post, pk=pk)
         post.is_announcement = not post.is_announcement
         post.save()
+
+        # 모든 활성 사용자에게 공지 알림 생성
+        message_text = f'새로운 공지사항: "{post.title}"이(가) 등록되었습니다.' if post.is_announcement else f'공지사항 "{post.title}"이(가) 해제되었습니다.'
+        link_url = reverse_lazy('main:board_detail', kwargs={'pk': post.pk})
+
+        for user in User.objects.filter(is_active=True):
+            Notification.objects.create(
+                user=user,
+                message=message_text,
+                link=link_url
+            )
+
         return JsonResponse({'success': True, 'is_announcement': post.is_announcement})
     return JsonResponse({'error': 'Invalid request method'}, status=405)

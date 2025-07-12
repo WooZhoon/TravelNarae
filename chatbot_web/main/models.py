@@ -48,3 +48,17 @@ class Comment(models.Model):
 
     class Meta:
         ordering = ['created_at'] # 대댓글은 템플릿에서 계층적으로 정렬
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    message = models.CharField(max_length=255)
+    link = models.CharField(max_length=255, blank=True, null=True)
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'Notification for {self.user.username}: {self.message}'
+
+    class Meta:
+        ordering = ['-created_at']
