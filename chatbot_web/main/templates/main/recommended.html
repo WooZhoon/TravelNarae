@@ -9,57 +9,59 @@
 
 {% block content %}
   <div class="container">
-    <h2 class="mb-4 text-center">추천 여행지 선택</h2>
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-        {% endfor %}
-    </ul>
-    {% endif %}
+    <div class="recommendation-input-card">
+      <h2 class="mb-4 text-center">추천 여행지 선택</h2>
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+          {% endfor %}
+      </ul>
+      {% endif %}
 
-    <form method="post">
-      {% csrf_token %}
-      <!-- 📅 여행 날짜 선택 -->
-      <div class="mb-3">
-        <label for="travel-dates" class="form-label">여행 기간</label>
-        <input type="text" id="travel-dates" name="travel_dates" class="form-control" placeholder="시작일 ~ 종료일 선택" name="travel-dates">
-      </div>
+      <form method="post">
+        {% csrf_token %}
+        <!-- 📅 여행 날짜 선택 -->
+        <div class="mb-3">
+          <label for="travel-dates" class="form-label">여행 기간</label>
+          <input type="text" id="travel-dates" name="travel_dates" class="form-control" placeholder="시작일 ~ 종료일 선택" name="travel-dates">
+        </div>
 
-      <!-- 📍 지역 선택 -->
-      <div class="mb-3">
-        <label class="form-label">여행 지역</label>
-        <div class="row g-2">
+        <!-- 📍 지역 선택 -->
+        <div class="mb-3">
+          <label class="form-label">여행 지역</label>
+          <div class="row g-2">
+            <div class="col-md-6">
+              <select id="region" name="region" class="form-select">
+                <option value="">-- 시/도 선택 --</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <select id="sub-region" name="sub_region" class="form-select" disabled>
+                <option value="">-- 세부 지역 선택 --</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 👥 인원 수 -->
+        <div class="mb-3 row">
           <div class="col-md-6">
-            <select id="region" name="region" class="form-select">
-              <option value="">-- 시/도 선택 --</option>
-            </select>
+            <label for="adults" class="form-label">성인 수</label>
+            <input type="number" id="adults" name="adults" class="form-control" min="1" value="1">
           </div>
           <div class="col-md-6">
-            <select id="sub-region" name="sub_region" class="form-select" disabled>
-              <option value="">-- 세부 지역 선택 --</option>
-            </select>
+            <label for="children" class="form-label">어린이 수</label>
+            <input type="number" id="children" name="children" class="form-control" min="0" value="0">
           </div>
         </div>
-      </div>
 
-      <!-- 👥 인원 수 -->
-      <div class="mb-3 row">
-        <div class="col-md-6">
-          <label for="adults" class="form-label">성인 수</label>
-          <input type="number" id="adults" name="adults" class="form-control" min="1" value="1">
+        <!-- ✅ 추천 버튼 -->
+        <div class="text-center">
+          <button type="submit" class="btn btn-primary">추천 받기</button>
         </div>
-        <div class="col-md-6">
-          <label for="children" class="form-label">어린이 수</label>
-          <input type="number" id="children" name="children" class="form-control" min="0" value="0">
-        </div>
-      </div>
-
-      <!-- ✅ 추천 버튼 -->
-      <div class="text-center">
-        <button type="submit" class="btn btn-primary">추천 받기</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 
   <!-- 추천 결과 표시 -->

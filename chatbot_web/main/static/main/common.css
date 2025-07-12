@@ -273,3 +273,15 @@ body::before {
   opacity: 0.85; /* 옅게 */
   z-index: -1; /* 다른 요소 뒤로 */
 }
+
+/* Recommendation Input Card */
+.recommendation-input-card {
+  background-color: #ffffff;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  margin-bottom: 30px;
+  max-width: 600px; /* Adjust as needed */
+  margin-left: auto;
+  margin-right: auto;
+}
