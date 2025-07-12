@@ -27,6 +27,7 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '.
 
 # 🔧 외부 모듈 (LangChain 기반 응답 생성)
 from langchain_core.messages import HumanMessage
+from langchain_openai import ChatOpenAI
 from chat_agent import agent, generate_config
 from llm_tools.chat_history_manager import chat_store
 
@@ -159,9 +160,10 @@ def profile_edit_view(request):
 
 @login_required
 def chatbot(request):
-    # 새로운 채팅 세션을 생성하고 해당 페이지로 이동
-    session = ChatSession.objects.create(user=request.user, title="새 채팅")
-    return redirect('main:chat_bot', session_id=session.id)
+    # 이 뷰는 이제 chat_bot_view로 리디렉션하거나, 
+    # 혹은 chat_bot_view가 직접 렌더링하도록 통합될 수 있습니다.
+    # 여기서는 session_id 없이 chat_bot_view를 호출하도록 수정합니다.
+    return chat_bot_view(request, session_id=None)
 
 
 @login_required
@@ -174,15 +176,20 @@ def chatbot_redirect_to_latest_session(request):
         return redirect('main:chat_bot', session_id=latest_session.id)
     else:
         # 채팅 세션이 없으면 새로 만들어서 해당 세션으로 이동
-        return chatbot(request)
+        return redirect('main:chatbot_new')
 
 
 @login_required
-def chat_bot_view(request, session_id):
+def chat_bot_view(request, session_id=None):
     user = request.user
     sessions = ChatSession.objects.filter(user=user).order_by('-created_at')
-    selected_session = get_object_or_404(ChatSession, id=session_id, user=user)
-    chat_messages = selected_session.messages.order_by('timestamp')
+    
+    selected_session = None
+    chat_messages = []
+
+    if session_id:
+        selected_session = get_object_or_404(ChatSession, id=session_id, user=user)
+        chat_messages = selected_session.messages.order_by('timestamp')
 
     return render(request, 'main/chatbot.html', {
         'sessions': sessions,
@@ -193,6 +200,18 @@ def chat_bot_view(request, session_id):
 # ===================================================
 # ⚙️ 유틸리티 함수: 세션 ID, 챗봇 응답
 # ===================================================
+
+def summarize_message(user_message):
+    # LLM을 사용하여 메시지를 한 줄로 요약
+    try:
+        llm = ChatOpenAI(model_name="gpt-3.5-turbo", temperature=0)
+        prompt = f"다음 사용자 메시지를 기반으로, 채팅방의 제목으로 쓸 짧은 요약을 5단어 이내로 생성해줘. 반말은 사용하지 마. 예를 들어, '경복궁 가는 길 알려줘'는 '경복궁 가는 길'로 요약해줘.\n\n사용자 메시지: {user_message}\n\n요약:"
+        summary = llm.invoke(prompt).content.strip()
+        return summary
+    except Exception as e:
+        # 요약 실패 시 기본 제목 반환
+        print(f"Title summarization failed: {e}")
+        return "새로운 채팅"
 
 def get_session_id(request):
     # 인증된 유저의 고유 세션 키를 가져옴
@@ -223,18 +242,26 @@ def chatbot_response(request, user_message):
 @csrf_exempt
 @login_required
 def chat_api(request):
-    # 비동기 POST 요청으로 챗봇 응답 생성 및 DB 저장
     if request.method != "POST":
         return JsonResponse({"error": "POST 요청만 허용"}, status=405)
 
     try:
         data = json.loads(request.body)
         user_msg = data.get("message", "")
+        session_id = data.get("session_id")
 
-        # 최신 채팅 세션 가져오기
-        session = ChatSession.objects.filter(user=request.user).order_by('-created_at').first()
+        session = None
+        is_new_session = False
+        if session_id:
+            session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+        else:
+            # 새 세션인 경우, 임시 제목으로 생성
+            if user_msg:
+                session = ChatSession.objects.create(user=request.user, title="대화 시작...")
+                is_new_session = True
+
         if not session:
-            session = ChatSession.objects.create(user=request.user, title="비동기 채팅")
+            return JsonResponse({"error": "세션을 찾거나 생성할 수 없습니다."}, status=400)
 
         # 유저 메시지 저장
         ChatMessage.objects.create(session=session, role='user', content=user_msg)
@@ -245,9 +272,36 @@ def chat_api(request):
         # AI 메시지 저장
         ChatMessage.objects.create(session=session, role='assistant', content=reply)
 
-        return JsonResponse({"reply": reply})
+        response_data = {"reply": reply}
+        if is_new_session:
+            response_data["new_session_id"] = session.id
+
+        return JsonResponse(response_data)
     except Exception as e:
         return JsonResponse({"error": f"요청 처리 오류: {str(e)}"}, status=500)
+
+@csrf_exempt
+@login_required
+def update_chat_title(request, session_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            first_message = data.get('first_message')
+            if not first_message:
+                return JsonResponse({'status': 'error', 'message': '첫 메시지가 필요합니다.'}, status=400)
+
+            session = get_object_or_404(ChatSession, id=session_id, user=request.user)
+            
+            # 제목 요약 및 업데이트
+            new_title = summarize_message(first_message)
+            session.title = new_title
+            session.save()
+            
+            return JsonResponse({'status': 'success', 'new_title': new_title})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+    return JsonResponse({'status': 'error', 'message': 'POST 요청만 허용됩니다.'}, status=405)
+
 
 @csrf_exempt
 @login_required

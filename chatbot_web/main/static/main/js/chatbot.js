@@ -170,7 +170,7 @@ const userInput = document.getElementById('userInput');
 const chatMain = document.querySelector('.chat-main');
 
 chatForm.addEventListener('submit', async (event) => {
-  event.preventDefault(); // 폼 제출 방지
+  event.preventDefault();
 
   const msg = userInput.value.trim();
   if (!msg) return;
@@ -178,24 +178,88 @@ chatForm.addEventListener('submit', async (event) => {
   appendMessage('user', msg);
   userInput.value = '';
 
+  const pathParts = window.location.pathname.split('/').filter(Boolean);
+  const lastPart = pathParts.pop();
+  const sessionId = /^[0-9]+$/.test(lastPart) ? lastPart : null;
+
   try {
     const response = await fetch('/api/chat/', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRFToken': getCookie('csrftoken') // CSRF 토큰 추가
+        'X-CSRFToken': getCookie('csrftoken'),
       },
-      body: JSON.stringify({ message: msg })
+      body: JSON.stringify({ 
+        message: msg,
+        session_id: sessionId
+      }),
     });
 
     const data = await response.json();
-    console.log('Received response:', data);
     appendMessage('assistant', data.reply);
+
+    if (data.new_session_id) {
+      const newSessionId = data.new_session_id;
+      const newUrl = `/chatbot/${newSessionId}/`;
+      history.pushState({path: newUrl}, '', newUrl);
+
+      const newSessionItem = document.createElement('a');
+      newSessionItem.href = newUrl;
+      newSessionItem.classList.add('chat-session-item', 'active');
+      newSessionItem.dataset.sessionId = newSessionId;
+      newSessionItem.innerHTML = `
+        <span class="material-symbols-outlined">chat</span>
+        <span class="session-title">대화 시작...</span>
+        <span class="material-symbols-outlined delete-session-btn">close</span>
+      `;
+
+      const existingActive = document.querySelector('.chat-session-item.active');
+      if (existingActive) {
+        existingActive.classList.remove('active');
+      }
+
+      const sessionList = document.querySelector('ul.chat-session-list');
+      const emptyMessage = document.querySelector('.chat-session-empty');
+      if (emptyMessage) {
+        emptyMessage.remove();
+      }
+      sessionList.prepend(newSessionItem);
+
+      // 제목 업데이트 요청
+      updateTitle(newSessionId, msg);
+    }
+
   } catch (error) {
     console.error('Error sending message:', error);
     appendMessage('assistant', '메시지를 보내는 중 오류가 발생했습니다.');
   }
 });
+
+async function updateTitle(sessionId, firstMessage) {
+  try {
+    const response = await fetch(`/api/chat/update_title/${sessionId}/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCookie('csrftoken'),
+      },
+      body: JSON.stringify({ first_message: firstMessage }),
+    });
+    const data = await response.json();
+    if (data.status === 'success') {
+      // DOM에서 세션 아이템을 다시 찾아 제목을 업데이트합니다.
+      const sessionItemToUpdate = document.querySelector(`.chat-session-item[data-session-id="${sessionId}"]`);
+      if (sessionItemToUpdate) {
+        const titleElement = sessionItemToUpdate.querySelector('.session-title');
+        if (titleElement) {
+          titleElement.textContent = data.new_title;
+        }
+      }
+    }
+  } catch (error) {
+    console.error('Error updating title:', error);
+  }
+}
 
 function appendMessage(sender, message) {
   console.log(`Appending message: [${sender}] ${message}`);

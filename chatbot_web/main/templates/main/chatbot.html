@@ -33,18 +33,17 @@
       <span>지난 채팅 목록</span>
     </div>
     <div class="sidebar-session-list">
-      {% if sessions %}
-        <ul class="chat-session-list">
-          {% for s in sessions %}
-            <a href="{% url 'main:chat_bot' s.id %}"
-              class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}" data-session-id="{{ s.id }}">
-              <span class="material-symbols-outlined">chat</span>
-              <span class="session-title">{{ s.title|truncatechars:20 }}</span>
-              <span class="material-symbols-outlined delete-session-btn">close</span>
-            </a>
-          {% endfor %}
-        </ul>
-      {% else %}
+      <ul class="chat-session-list">
+        {% for s in sessions %}
+          <a href="{% url 'main:chat_bot' s.id %}"
+            class="chat-session-item {% if selected_session and s.id == selected_session.id %}active{% endif %}" data-session-id="{{ s.id }}">
+            <span class="material-symbols-outlined">chat</span>
+            <span class="session-title">{{ s.title|truncatechars:20 }}</span>
+            <span class="material-symbols-outlined delete-session-btn">close</span>
+          </a>
+        {% endfor %}
+      </ul>
+      {% if not sessions %}
         <p class="chat-session-empty">채팅 기록 없음</p>
       {% endif %}
     </div>
