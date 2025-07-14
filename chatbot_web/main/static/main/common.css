@@ -317,4 +317,5 @@ body::before {
   direction: ltr;
   -webkit-font-feature-settings: 'liga';
   -webkit-font-smoothing: antialiased;
+  color: #F8F4E3; /* 요청하신 색상 */
 }

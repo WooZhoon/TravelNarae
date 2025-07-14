@@ -108,25 +108,24 @@ def signup(request):
         password = request.POST.get('password')
         password2 = request.POST.get('password2')
         nickname = request.POST.get('nickname')
-        email = request.POST.get('email') # 이메일 필드 추가
+        email = request.POST.get('email')
 
         if password != password2:
             messages.error(request, "비밀번호가 일치하지 않습니다.")
-            return render(request, 'main/signup.html')
+            return render(request, 'main/signup.html', {'username': username, 'nickname': nickname, 'email': email})
 
         if User.objects.filter(username=username).exists():
             messages.error(request, "이미 존재하는 아이디입니다.")
-            return render(request, 'main/signup.html')
+            return render(request, 'main/signup.html', {'username': username, 'nickname': nickname, 'email': email})
 
         if User.objects.filter(email=email).exists():
             messages.error(request, "이미 가입된 이메일 주소입니다.")
-            return render(request, 'main/signup.html')
+            return render(request, 'main/signup.html', {'username': username, 'nickname': nickname, 'email': email})
 
         user = User.objects.create_user(username=username, password=password, email=email)
-        user.first_name = nickname  # 임시 닉네임 저장
+        user.first_name = nickname
         user.save()
 
-        # 환영 이메일 전송
         try:
             subject = '여행 나래에 오신 것을 환영합니다!'
             message = f'안녕하세요, {nickname}님! 여행 나래에 가입해주셔서 감사합니다.\n\n저희 서비스와 함께 즐거운 여행 계획을 세워보세요!'
